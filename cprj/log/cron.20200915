@@ -1,0 +1,19 @@
+[23:55:20-489723][31295:cron.cc] DB CONNECT
+[23:55:20-489818][31295:cron.cc] Start Main Loop ==========
+[23:55:20-489924][31295:cron.cc] ConSvr Listen Port[16384]
+[23:55:20-489974][31295:cron.cc] LsnHandler Listen From[localhost][9] T[319035136]
+[23:55:21-490047][31295:cron.cc] Day Changed [20200915235521][]
+[23:55:21-491544][31295:cron.cc] BizDiv [1]
+[23:55:21-496734][31295:cron.cc] Process Start: [31302][TEST-CLIENT]
+[23:57:09-161084][31295:cron.cc] SIGTERM Message Receive
+[23:57:09-161589][31295:cron.cc] Stop Main Loop ===========
+[23:57:09-161603][31295:cron.cc] Kill Child List
+[23:57:09-163942][31295:cron.cc] BF KILL PROCESS[31302][TEST-CLIENT]
+[23:57:09-167838][31295:cron.cc] KILL PROCESS[31302][TEST-CLIENT]
+[23:57:09-168040][31295:cron.cc] Process End ==============
+[23:57:54-648582][31657:cron.cc] DB CONNECT
+[23:57:54-648604][31657:cron.cc] Start Main Loop ==========
+[23:57:54-648732][31657:cron.cc] ConSvr Listen Port[16384]
+[23:57:54-648780][31657:cron.cc] LsnHandler Listen From[localhost][8] T[-1072388352]
+[23:57:55-648854][31657:cron.cc] Day Changed [20200915235755][]
+[23:57:55-649417][31657:cron.cc] BizDiv [1]

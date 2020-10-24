@@ -1,0 +1,12 @@
+[11:15:38-598693][80726:test.cc] TEST Process Start====================
+[11:15:38-598854][80726:test.cc] IP[localhost] PORT[16384]
+[11:15:38-598982][80726:test.cc] Client Connection IP[localhost]PORT[16384]
+[11:15:38-599118][80726:test.cc] Connect From[localhost][9] T[80971520]
+[11:15:52-744408][80726:test.cc] SIGINT Message Receive
+[11:15:52-744465][80726:test.cc] TEST Process End ====================
+[11:20:25-673584][81336:test.cc] TEST Process Start====================
+[11:20:25-673668][81336:test.cc] IP[localhost] PORT[16384]
+[11:20:25-673781][81336:test.cc] Client Connection IP[localhost]PORT[16384]
+[11:20:25-673992][81336:test.cc] Connect From[localhost][8] T[1925236480]
+[11:20:30-216362][81336:test.cc] SIGINT Message Receive
+[11:20:30-216411][81336:test.cc] TEST Process End ====================

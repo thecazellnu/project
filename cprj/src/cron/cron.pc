@@ -1,0 +1,1096 @@
+#include "cron.h"
+EXEC SQL INCLUDE SQLCA;
+
+#define LOG_LV 0
+
+EXEC SQL BEGIN DECLARE SECTION;
+char gs_datetime[16+1];
+char gs_week[16+1];
+int  gi_monthday1;
+int  gi_monthday2;
+char gs_bizdiv[16+1];	
+EXEC SQL END DECLARE SECTION;
+
+int InitSession();
+
+void sig_child(int signo)
+{
+	int	 pid = 0, status = 0;
+
+	while((pid = wait3(&status, WNOHANG, (struct rusage *) 0)) > 0) 
+	{
+		if((status & 0x000000ff) > 0)
+			g_Log.Write("[%d:%s] child kill status = [%d] pid=[%d]", 
+				g_Pid, __FILE__, status&0x000000ff, pid);
+		else if ((status >> 8) > 0)
+			g_Log.Write("[%d:%s] child exit status = [%d] pid=[%d]",
+				g_Pid, __FILE__, status>>8, pid);
+		if (g_Running) CheckChildProc(pid);
+	}
+	signal(SIGCHLD, sig_child);
+}
+
+void sig_term(int signo)
+{
+	g_Log.Write("[%d:%s] SIGTERM Message Receive", g_Pid, __FILE__);
+	g_Running = FALSE;
+}
+
+void sig_int(int signo)
+{
+	g_Log.Write("[%d:%s] SIGINT Message Receive", g_Pid, __FILE__);
+	g_Running = FALSE;
+}
+
+void sig_segv(int signo)
+{
+	g_Log.Write("[%d:%s] SIGSEGV Message Receive", g_Pid, __FILE__);
+	g_Running = FALSE;
+}
+
+void sig_pipe(int signo)
+{
+	g_Log.Write("[%d:%s] SIGPIPE Message Receive", g_Pid, __FILE__);
+}
+
+void SignalSet()
+{
+	signal(SIGINT , sig_int);
+	signal(SIGTERM, sig_term);
+	signal(SIGCHLD, sig_child);
+	signal(SIGPIPE, sig_pipe);
+	signal(SIGALRM, SIG_IGN);
+}
+
+void SetLog()
+{
+	char buff[256];
+	memset(buff, 0x00, sizeof(buff));
+	
+	if(getenv("DEV_LOG_PATH"))
+		sprintf(buff, "%s/%s", getenv("DEV_LOG_PATH"), g_PgmName);
+	else 
+		sprintf(buff, "/prj/cprj/log/%s", g_PgmName);
+	g_Log.Open(buff);
+}
+
+int DbConnect()
+{
+	EXEC SQL BEGIN DECLARE SECTION;
+    char    id[64];
+    char    passwd[64];
+    char    tns[64];
+    EXEC SQL END DECLARE SECTION;
+    strcpy(id, getenv("DBUSR"));
+	strcpy(passwd, getenv("DBPSWD"));
+	strcpy(tns, getenv("DBTNS"));
+    
+	EXEC SQL CONNECT :id IDENTIFIED BY :passwd USING :tns;
+    if (SQLCODE != 0)
+    {
+		printf("[%d:%s] DB Not CONNECT ====================\n", 
+			g_Pid, __FILE__);
+		g_Log.Write("[%d:%s] DB Not CONNECT", g_Pid, __FILE__);
+        return (SQLCODE);
+    }
+	else
+	{
+		printf("[%d:%s] DB CONNECT ====================\n", 
+			g_Pid, __FILE__);
+		g_Log.Write("[%d:%s] DB CONNECT", g_Pid, __FILE__);
+	}
+	
+	return TRUE;
+}
+
+int LoadProcessList()
+{
+	EXEC SQL BEGIN DECLARE SECTION ;
+	char    rowid[20];
+	char    name        [128 + 1];
+    char    month       [16  + 1];
+    char    week        [16  + 1];
+    char    bizday      [16  + 1];
+    char    execdate    [8   + 1];
+    char    attribute   [8   + 1];
+    char    bintype     [8   + 1];
+    char    sttime      [6   + 1];
+    char    edtime      [6   + 1];
+    char    path        [256 + 1];
+    char    argv        [256 + 1];
+    char    descript    [256 + 1];
+    char    useyn       [1   + 1];
+    char    last        [14  + 1];
+    int     pid                  ;
+    int     runcnt               ;
+	EXEC SQL END DECLARE SECTION ;
+	int i;
+
+	EXEC SQL DECLARE CTABLE_KEY CURSOR FOR
+	SELECT	ROWID
+			,NAME
+			,MONTH
+			,WEEK
+			,BIZDAY
+			,EXECDATE
+			,ATTRIBUTE
+			,NVL(BINTYPE, ' ')
+			,STTIME
+			,EDTIME
+			,TRIM(PATH)
+			,NVL(TRIM(ARGV), ' ')
+			,NVL(DESCRIPT, ' ')
+			,NVL(USEYN, 'N')
+			,NVL(LAST, ' ')
+			,PID
+			,RUNCNT
+	FROM	CRON_TAB
+	WHERE	1=1
+	;
+	EXEC SQL OPEN CTABLE_KEY;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+		return FALSE;
+	}
+
+	for(i = 0; ;i++)
+	{
+		PSInfo *pinfo = new PSInfo;
+		memset(rowid    , 0x00, sizeof(rowid    ));
+		memset(name     , 0x00, sizeof(name     ));
+		memset(month    , 0x00, sizeof(month    ));
+		memset(week     , 0x00, sizeof(week     ));
+		memset(bizday   , 0x00, sizeof(bizday   ));
+		memset(execdate , 0x00, sizeof(execdate ));
+		memset(attribute, 0x00, sizeof(attribute));
+		memset(bintype  , 0x00, sizeof(bintype  ));
+		memset(sttime   , 0x00, sizeof(sttime   ));
+		memset(edtime   , 0x00, sizeof(edtime   ));
+		memset(path     , 0x00, sizeof(path     ));
+		memset(argv     , 0x00, sizeof(argv     ));
+		memset(descript , 0x00, sizeof(descript ));
+		memset(useyn    , 0x00, sizeof(useyn    ));
+		memset(last     , 0x00, sizeof(last     ));
+		pid = 0;
+		runcnt = 0;
+
+		EXEC SQL FETCH CTABLE_KEY
+		INTO	:rowid
+				,:name
+				,:month
+				,:week
+				,:bizday
+				,:execdate
+				,:attribute
+				,:bintype
+				,:sttime
+				,:edtime
+				,:path
+				,:argv
+				,:descript
+				,:useyn
+				,:last
+				,:pid
+				,:runcnt
+		;
+
+		if (SQLCODE != 0) 
+		{
+            if(SQLCODE != 1403)
+                g_Log.Write("[%d:%s] CURSOR FETCH ERROR[%s]",
+                    g_Pid, __FILE__, SQLERRMSG);
+			break;
+		}
+		memcpy(pinfo->rowid    , rowid    , strlen(rowid    ));
+		memcpy(pinfo->name     , name     , strlen(name     ));
+		memcpy(pinfo->month    , month    , strlen(month    ));
+		memcpy(pinfo->week     , week     , strlen(week     ));
+		memcpy(pinfo->bizday   , bizday   , strlen(bizday   ));
+		memcpy(pinfo->execdate , execdate , strlen(execdate ));
+		memcpy(pinfo->attribute, attribute, strlen(attribute));
+		memcpy(pinfo->bintype  , bintype  , strlen(bintype  ));
+		memcpy(pinfo->sttime   , sttime   , strlen(sttime   ));
+		memcpy(pinfo->edtime   , edtime   , strlen(edtime   ));
+		memcpy(pinfo->path     , path     , strlen(path     ));
+		memcpy(pinfo->argv     , argv     , strlen(argv     ));
+		memcpy(pinfo->descript , descript , strlen(descript ));
+		memcpy(pinfo->useyn    , useyn    , strlen(useyn    ));
+		memcpy(pinfo->last     , last     , strlen(last     ));		
+        pinfo->pid = pid;
+        pinfo->runcnt = runcnt;
+
+		g_PSList.Add(pinfo);
+	}
+	EXEC SQL CLOSE CTABLE_KEY;
+
+	return 1;
+}
+
+int PrintProcessList()
+{
+    CNode    *pNode;
+    PSInfo   *pinfo;
+    int       listcnt = 0;
+    g_Log.Write("[%s] == PROCESS LIST ==", g_PgmName);
+    for (pNode = g_PSList.GetFirst();
+                pNode != NULL; pNode = g_PSList.GetNext(pNode))
+    {
+        if(pNode->m_pData == NULL) continue;
+        pinfo = (PSInfo *)pNode->m_pData;
+        g_Log.Write("[%s] [%d][%s] PID[%d]",
+                     g_PgmName, listcnt, pinfo->name, pinfo->pid);
+        listcnt++;
+     }
+    g_Log.Write("[%s] ==================", g_PgmName);
+    return 1;
+}
+
+int Initialize(int argc, char **argv)
+{
+	Daemon(getenv("RUN_DIR"), 1);
+	g_Pid = getpid();
+	strcpy(g_PgmName, "cron");
+	SignalSet();
+	SetLog();
+	if(DbConnect() != TRUE) return FALSE;
+	pthread_mutex_init(&g_Mutex, NULL);
+
+    if(InitSession() == FALSE) return FALSE;
+	LoadProcessList();
+
+	return TRUE;
+}
+
+void GetBizDiv()
+{
+	EXEC SQL
+	SELECT	CASE WHEN TO_CHAR(SYSDATE, 'D') IN ('1','7') THEN '0'
+            ELSE '1' END
+            --DAY_TYPE
+	INTO	:gs_bizdiv
+	FROM	DUAL --BFTDATE
+	WHERE	1=1
+	--AND		YYYYMMDD = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] BIZDATE INFO SELECT ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+	    strcpy(gs_bizdiv, "1");
+	}
+    return;
+}
+
+void CheckDate(char *toDate)
+{
+    if(GetDateInfo(0) == FALSE) return;
+    if(memcmp(toDate, gs_datetime, 8))
+    {
+		g_Log.Write("[%d:%s] Day Changed [%s][%.8s]", 
+            g_Pid, __FILE__, gs_datetime, toDate);
+        memcpy(toDate, gs_datetime, 8);
+        GetBizDiv();
+		g_Log.Write("[%d:%s] BizDiv [%s]", 
+            g_Pid, __FILE__, gs_bizdiv);
+    }
+    return ;
+}
+
+int GetDateInfoDB()
+{
+	EXEC SQL
+	SELECT	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			TO_CHAR(SYSDATE, 'D'),
+			TO_NUMBER(TO_CHAR(SYSDATE, 'DD')),
+			TO_NUMBER(SYSDATE - LAST_DAY(SYSDATE)),
+			--DAY_TYPE
+            CASE WHEN TO_CHAR(SYSDATE, 'D') IN ('1','7') THEN '0'
+            ELSE '1' END
+	INTO	:gs_datetime,
+			:gs_week,
+			:gi_monthday1,
+			:gi_monthday2,
+			:gs_bizdiv
+	FROM	DUAL --BFTDATE
+	WHERE	1=1
+	--AND		YYYYMMDD = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] DATE INFO SELECT ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+int GetLastDay(int year, int month)
+{
+    switch(month)
+    {
+        case 1 : case 3 : case 5 : case 7 : 
+        case 8 : case 10: case 12:
+            return 31;
+            break;
+
+        case 4 : case 6 : case 9 : case 11:
+            return 30;
+            break;
+
+        case 2 :
+            if((year%4==0) && (year%100!=0) || (year%400==0))
+                return 29;
+            else return 28;
+            break;
+
+        default:
+            return -1;
+
+    }
+}
+
+int GetDateInfo(int div)
+{
+    int     lastday;
+    time_t  timeval;
+    struct  tm *tp;
+    time(&timeval);
+    tp = localtime(&timeval);
+    if(tp == NULL) return FALSE;
+    sprintf(gs_datetime,"%04d%02d%02d%02d%02d%02d",
+        tp->tm_year+1900, tp->tm_mon+1, tp->tm_mday, 
+        tp->tm_hour, tp->tm_min, tp->tm_sec);
+
+    if(div == 0) return TRUE;
+
+    sprintf(gs_week, "%d", tp->tm_wday + 1);
+    gi_monthday1 = tp->tm_mday;
+    lastday = GetLastDay(tp->tm_year+1900, tp->tm_mon+1);
+    if(lastday < 0) return FALSE;
+    gi_monthday2 = tp->tm_mday - lastday;
+
+	return TRUE;
+}
+
+int DiffMonthDay(char *day)
+{
+#if LOG_LV 
+g_Log.Write("[%d:%s] [%s][%d][%d]",			g_Pid, __FILE__, day,  gi_monthday1, gi_monthday2);	
+#endif
+	if(day[0] == '*') return TRUE;
+	else if(gi_monthday1 == atoi(day)) return TRUE;
+	else if(gi_monthday2 == atoi(day)) return TRUE;
+		
+	return FALSE;
+}
+
+int DiffWeekDay(char *day)
+{
+#if LOG_LV 
+g_Log.Write("[%d:%s] [%s][%s]",			g_Pid, __FILE__, day,  gs_week);	
+#endif
+	int i;
+	if(day[0] == '*') return TRUE;
+	for(i = 0; i<strlen(day); i++)
+		if(day[i] == gs_week[0]) return TRUE;
+	
+	return FALSE;
+}
+
+int DiffBizDay(char *day)
+{
+#if LOG_LV 
+g_Log.Write("[%d:%s] [%s][%s]",			g_Pid, __FILE__, day,  gs_bizdiv);	
+#endif
+	if(day[0] == '*') return TRUE;
+	else if(!memcmp(day, "BIZ", 3)) 
+		if(gs_bizdiv[0] == '0') return TRUE;
+	else if(!memcmp(day, "HOL", 3)) 
+		if(gs_bizdiv[0] == '0') return FALSE;
+			
+	return FALSE;
+}
+
+int DiffDate(char *day)
+{
+#if LOG_LV 
+g_Log.Write("[%d:%s] [%s][%s]",			g_Pid, __FILE__, day,  gs_datetime);	
+#endif
+	if(day[0] == '*') return TRUE;
+	else if(!memcmp(day, gs_datetime, 8)) return TRUE;
+		
+	return FALSE;
+}
+
+int DiffTime(char *st, char *ed)
+{
+#if LOG_LV 
+g_Log.Write("[%d:%s] [%s][%s][%.6s]",			g_Pid, __FILE__, st, ed,  gs_datetime+8);	
+#endif
+	if ((memcmp(ed, gs_datetime + 8, 6) >  0) && 
+		(memcmp(st, gs_datetime + 8, 6) <= 0))
+	{
+#if LOG_LV 
+g_Log.Write("[%d:%s] OK[%s][%s][%s]",			g_Pid, __FILE__, st, ed,  gs_datetime);	
+#endif		
+		return TRUE;
+	}
+	else if ((!memcmp(ed, "000000", 6)) && 
+			  (memcmp(st, gs_datetime + 8, 6) <= 0))
+	{
+#if LOG_LV 
+g_Log.Write("[%d:%s] OK2[%s][%s][%s]",			g_Pid, __FILE__, st, ed,  gs_datetime);	
+#endif		
+		return TRUE;
+	}
+	return FALSE;
+}
+
+int killPS(int pid, PSInfo *pinfo)
+{
+    int krtn;
+	if(pid <= 1) return FALSE;
+
+	g_Log.Write("[%d:%s] KILL PROCESS[%d][%s]",
+		g_Pid, __FILE__, pid, pinfo->name);
+	krtn = kill(pid, SIGTERM);
+	if(krtn < 0)
+	{
+		g_Log.Write("[%d:%s] KILL FAILURE[%d][%d][%s]",
+			g_Pid, __FILE__, errno, pid, pinfo->name);
+
+		if(UpdatePid(pinfo->rowid, -1) == TRUE)
+		{
+			pinfo->pid = -1;
+			EXEC SQL COMMIT;
+			return TRUE;
+		}
+		else
+		{
+			EXEC SQL ROLLBACK;
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+int RunningClient()
+{
+	CNode  *pNode;
+    PSInfo *pinfo;
+
+    if(GetDateInfoDB() == FALSE) return FALSE;
+#if LOG_LV 
+g_Log.Write("[%d:%s] GetDateDB[%s][%s][%d][%d][%s]", g_Pid, __FILE__, gs_datetime, gs_week, gi_monthday1, gi_monthday2, gs_bizdiv); 
+#endif		
+
+    for(pNode = g_PSList.GetFirst();
+                pNode != NULL; pNode = g_PSList.GetNext(pNode))
+    {
+        if(pNode->m_pData == NULL) continue;
+        pinfo = (PSInfo *)pNode->m_pData;
+		
+		if(pinfo->useyn[0] != 'Y' && pinfo->useyn[0] != 'y')
+		{
+			if(pinfo->pid > 1) 
+				killPS(pinfo->pid, pinfo);
+		}
+		else
+		{
+			if(pinfo->pid > 1)
+			{
+				if(!memcmp(pinfo->attribute, "FOREVER", 7))
+				{
+					if(DiffMonthDay(pinfo->month) == FALSE)
+                        killPS(pinfo->pid, pinfo);
+					if(DiffWeekDay(pinfo->week) == FALSE)
+                        killPS(pinfo->pid, pinfo);
+					if(DiffBizDay(pinfo->bizday) == FALSE)
+                        killPS(pinfo->pid, pinfo);
+					if(DiffDate(pinfo->execdate) == FALSE)
+                        killPS(pinfo->pid, pinfo);
+						
+					if(memcmp(pinfo->edtime, "000000", 6))
+					{
+						if(DiffTime(pinfo->sttime, pinfo->edtime) == FALSE)
+                            killPS(pinfo->pid, pinfo);
+					}
+				}
+			}
+			else
+			{
+				if(DiffMonthDay(pinfo->month) == TRUE)
+					if(DiffWeekDay(pinfo->week) == TRUE)
+						if(DiffBizDay(pinfo->bizday) == TRUE)
+							if(DiffDate(pinfo->execdate) == TRUE)
+								if(!memcmp(pinfo->attribute, "FOREVER", 7))
+								{
+									if(DiffTime(pinfo->sttime, 
+										pinfo->edtime) == TRUE)
+										runPS(pinfo);
+								}
+								else if(!memcmp(pinfo->attribute, "ONCE", 4))
+								{
+									if(!memcmp(pinfo->sttime, 
+										gs_datetime + 8, 6))
+										runPS(pinfo);
+								}
+								else if(!memcmp(pinfo->attribute, "BATCH", 5))
+								{
+									if(memcmp(pinfo->last, gs_datetime, 8))
+										if(DiffTime(pinfo->sttime, 
+											pinfo->edtime) == TRUE)
+                                            runPS(pinfo);
+								}
+			}
+		}
+	}
+    return TRUE;
+}
+
+int RunningClientDB()
+{
+	EXEC SQL BEGIN DECLARE SECTION ;
+	char    rowid[20];
+	char    name        [128 + 1];
+    char    month       [16  + 1];
+    char    week        [16  + 1];
+    char    bizday      [16  + 1];
+    char    execdate    [8   + 1];
+    char    attribute   [8   + 1];
+    char    bintype     [8   + 1];
+    char    sttime      [6   + 1];
+    char    edtime      [6   + 1];
+    char    path        [256 + 1];
+    char    argv        [256 + 1];
+    char    descript    [256 + 1];
+    char    useyn       [1   + 1];
+    char    last        [14  + 1];
+    int     pid                  ;
+    int     runcnt               ;
+	EXEC SQL END DECLARE SECTION ;
+	int i;
+
+    PSInfo pinfo;
+
+    if(GetDateInfoDB() == FALSE) return FALSE;
+#if LOG_LV 
+g_Log.Write("[%d:%s] GetDateDB[%s][%s][%d][%d][%s]", g_Pid, __FILE__, gs_datetime, gs_week, gi_monthday1, gi_monthday2, gs_bizdiv); 
+#endif		
+		
+	EXEC SQL DECLARE CRON_TABLE_KEY CURSOR FOR
+	SELECT	ROWID
+			,NAME
+			,MONTH
+			,WEEK
+			,BIZDAY
+			,EXECDATE
+			,ATTRIBUTE
+			,NVL(BINTYPE, ' ')
+			,STTIME
+			,EDTIME
+			,TRIM(PATH)
+			,NVL(TRIM(ARGV), ' ')
+			,NVL(DESCRIPT, ' ')
+			,NVL(USEYN, 'N')
+			,NVL(LAST, ' ')
+			,PID
+			,RUNCNT
+	FROM	CRON_TAB
+	WHERE	1=1
+	;
+	EXEC SQL OPEN CRON_TABLE_KEY;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+		return FALSE;
+	}
+
+	for(i = 0; ;i++)
+	{
+        memset(&pinfo   , 0x00, sizeof(PSInfo   ));
+		memset(rowid    , 0x00, sizeof(rowid    ));
+		memset(name     , 0x00, sizeof(name     ));
+		memset(month    , 0x00, sizeof(month    ));
+		memset(week     , 0x00, sizeof(week     ));
+		memset(bizday   , 0x00, sizeof(bizday   ));
+		memset(execdate , 0x00, sizeof(execdate ));
+		memset(attribute, 0x00, sizeof(attribute));
+		memset(bintype  , 0x00, sizeof(bintype  ));
+		memset(sttime   , 0x00, sizeof(sttime   ));
+		memset(edtime   , 0x00, sizeof(edtime   ));
+		memset(path     , 0x00, sizeof(path     ));
+		memset(argv     , 0x00, sizeof(argv     ));
+		memset(descript , 0x00, sizeof(descript ));
+		memset(useyn    , 0x00, sizeof(useyn    ));
+		memset(last     , 0x00, sizeof(last     ));
+		pid = 0;
+		runcnt = 0;
+
+		EXEC SQL FETCH CRON_TABLE_KEY
+		INTO	:rowid
+				,:name
+				,:month
+				,:week
+				,:bizday
+				,:execdate
+				,:attribute
+				,:bintype
+				,:sttime
+				,:edtime
+				,:path
+				,:argv
+				,:descript
+				,:useyn
+				,:last
+				,:pid
+				,:runcnt
+		;
+
+		if (SQLCODE != 0) 
+		{
+            if(SQLCODE != 1403)
+                g_Log.Write("[%d:%s] CURSOR FETCH ERROR[%s]",
+                    g_Pid, __FILE__, SQLERRMSG);
+			break;
+		}
+#if 0 
+		g_Log.Write("[%d:%s] rowid    [%s]", g_Pid, __FILE__, rowid    );
+		g_Log.Write("[%d:%s] name     [%s]", g_Pid, __FILE__, name     );
+		g_Log.Write("[%d:%s] month    [%s]", g_Pid, __FILE__, month    );
+		g_Log.Write("[%d:%s] week     [%s]", g_Pid, __FILE__, week     );
+		g_Log.Write("[%d:%s] bizday   [%s]", g_Pid, __FILE__, bizday   );
+		g_Log.Write("[%d:%s] execdate [%s]", g_Pid, __FILE__, execdate );
+		g_Log.Write("[%d:%s] attribute[%s]", g_Pid, __FILE__, attribute);
+		g_Log.Write("[%d:%s] bintype  [%s]", g_Pid, __FILE__, bintype  );
+		g_Log.Write("[%d:%s] sttime   [%s]", g_Pid, __FILE__, sttime   );
+		g_Log.Write("[%d:%s] edtime   [%s]", g_Pid, __FILE__, edtime   );
+		g_Log.Write("[%d:%s] path     [%s]", g_Pid, __FILE__, path     );
+		g_Log.Write("[%d:%s] argv     [%s]", g_Pid, __FILE__, argv     );
+		g_Log.Write("[%d:%s] descript [%s]", g_Pid, __FILE__, descript );
+		g_Log.Write("[%d:%s] useyn    [%s]", g_Pid, __FILE__, useyn    );
+		g_Log.Write("[%d:%s] last     [%s]", g_Pid, __FILE__, last     );		
+#endif
+		memcpy(pinfo.rowid    , rowid    , strlen(rowid    ));
+		memcpy(pinfo.name     , name     , strlen(name     ));
+		memcpy(pinfo.month    , month    , strlen(month    ));
+		memcpy(pinfo.week     , week     , strlen(week     ));
+		memcpy(pinfo.bizday   , bizday   , strlen(bizday   ));
+		memcpy(pinfo.execdate , execdate , strlen(execdate ));
+		memcpy(pinfo.attribute, attribute, strlen(attribute));
+		memcpy(pinfo.bintype  , bintype  , strlen(bintype  ));
+		memcpy(pinfo.sttime   , sttime   , strlen(sttime   ));
+		memcpy(pinfo.edtime   , edtime   , strlen(edtime   ));
+		memcpy(pinfo.path     , path     , strlen(path     ));
+		memcpy(pinfo.argv     , argv     , strlen(argv     ));
+		memcpy(pinfo.descript , descript , strlen(descript ));
+		memcpy(pinfo.useyn    , useyn    , strlen(useyn    ));
+		memcpy(pinfo.last     , last     , strlen(last     ));		
+        pinfo.pid = pid;
+        pinfo.runcnt = runcnt;
+
+		if(useyn[0] != 'Y' && useyn[0] != 'y')
+		{
+			if(pid > 1) 
+				killPS(pid, &pinfo);
+		}
+		else
+		{
+			if(pid > 1)
+			{
+				if(!memcmp(attribute, "FOREVER", 7))
+				{
+					if(DiffMonthDay(month) == FALSE)
+                        killPS(pid, &pinfo);
+					if(DiffWeekDay(week) == FALSE)
+                        killPS(pid, &pinfo);
+					if(DiffBizDay(bizday) == FALSE)
+                        killPS(pid, &pinfo);
+					if(DiffDate(execdate) == FALSE)
+                        killPS(pid, &pinfo);
+						
+					if(memcmp(edtime, "000000", 6))
+					{
+						if(DiffTime(sttime, edtime) == FALSE)
+                            killPS(pid, &pinfo);
+					}
+				}
+			}
+			else
+			{
+				if(DiffMonthDay(month) == TRUE)
+					if(DiffWeekDay(week) == TRUE)
+						if(DiffBizDay(bizday) == TRUE)
+							if(DiffDate(execdate) == TRUE)
+								if(!memcmp(attribute, "FOREVER", 7))
+								{
+									if(DiffTime(sttime, edtime) == TRUE)
+										runPS(&pinfo);
+								}
+								else if(!memcmp(attribute, "ONCE", 4))
+								{
+									if(!memcmp(sttime, gs_datetime + 8, 6))
+										runPS(&pinfo);
+								}
+								else if(!memcmp(attribute, "BATCH", 5))
+								{
+									if(memcmp(last, gs_datetime, 8))
+										if(DiffTime(sttime, edtime) == TRUE)
+                                            runPS(&pinfo);
+								}
+			}
+		}
+	}
+	EXEC SQL CLOSE CRON_TABLE_KEY;
+
+    return TRUE;
+}
+
+int runPS(PSInfo *pinfo)
+{
+	int		pid;
+	int		i = 1;
+	char	*tmp, *argv[16] = {NULL}, buf[128];
+	char	sbuff[256];	
+
+	strcpy(sbuff, pinfo->argv);
+	if(sbuff)
+	{
+		tmp = strtok(sbuff, " ");
+		if(tmp) 
+		{
+			do 
+			{
+				argv[i++] = tmp;
+
+				tmp = strtok(NULL, " ");
+				if (tmp == NULL) {
+					argv[i] = tmp;
+					break;
+				}
+			} while(tmp);
+		}
+		else 
+		{
+			argv[i] = NULL;
+		}
+
+		tmp = strrchr(pinfo->path, '/');
+		if (tmp == NULL) 
+		{
+			return FALSE;
+		}
+		argv[0] = ++tmp;
+	}
+	argv[i] = NULL;
+#if LOG_LV
+g_Log.Write("[%d:%s] execv2[%s][%s][%s][%s][%s][%s]", 
+g_Pid, __FILE__, pinfo->path, argv[0], argv[1], argv[2], argv[3], argv[4]);
+#endif	
+
+	pid = fork();
+	switch(pid) 
+	{
+		case  0:
+			if(execv(pinfo->path, argv) < 0)
+				g_Log.Write("[%d:%s] Execute Error: [%s][%d]", 
+					g_Pid, __FILE__, pinfo->name, errno);
+			_exit(0);
+			break;
+		case -1:
+			return FALSE;
+		default:
+			g_Log.Write("[%d:%s] Process Start: [%d][%s]", 
+				g_Pid, __FILE__, pid, pinfo->name);
+
+			pinfo->pid = pid;
+			if(UpdatePid(pinfo->rowid, pid) == TRUE) EXEC SQL COMMIT;
+			else EXEC SQL ROLLBACK;
+					
+			break;
+	}
+
+	return TRUE;
+}
+
+int CheckChildProc(int pid)
+{
+	EXEC SQL BEGIN DECLARE SECTION;
+    int		hPid;
+	char	hRowid[20 +1];
+    EXEC SQL END DECLARE SECTION;
+    hPid = pid;
+
+    memset(hRowid, 0x00, sizeof(hRowid));
+	PSInfo *pinfo = g_PSList.SearchPid(pid);
+    memcpy(hRowid, pinfo->rowid, strlen(pinfo->rowid));
+    
+	g_Log.Write("[%d:%s] CRON_TAB UPDATE[%d]-1",
+		g_Pid, __FILE__, hPid);
+
+	pthread_mutex_lock(&g_Mutex);
+	EXEC SQL
+	UPDATE	CRON_TAB
+	SET		PID = -1
+	WHERE	ROWID = :hRowid;
+	pthread_mutex_unlock(&g_Mutex);
+
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] CRON_TAB UPDATE ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+
+        EXEC SQL ROLLBACK;
+		return FALSE;		
+	}
+	g_Log.Write("[%d:%s] CRON_TAB UPDATE[%d]-1ED",
+		g_Pid, __FILE__, hPid);
+	pinfo->pid = -1;
+
+    EXEC SQL COMMIT;
+	return TRUE;
+}
+
+int UpdatePid(char *rowid, int pid)
+{
+	EXEC SQL BEGIN DECLARE SECTION;
+	char	hRowid[20 +1];
+    int		hPid;
+    EXEC SQL END DECLARE SECTION;
+
+    memset(hRowid, 0x00, sizeof(hRowid));
+    memcpy(hRowid, rowid, strlen(rowid));
+    hPid = pid;
+
+	if(hPid < 0)
+	{
+		EXEC SQL
+		UPDATE	CRON_TAB
+		SET		PID = :hPid
+		WHERE	ROWID = :hRowid;
+		if(SQLCODE != 0)
+		{
+			g_Log.Write("[%d:%s] CRON_TAB ED UPDATE ERROR[%s][%s]",
+				g_Pid, __FILE__, hRowid, SQLERRMSG);
+			return FALSE;		
+		}
+	}
+	else 
+	{
+		EXEC SQL
+		UPDATE	CRON_TAB
+		SET		PID		= :hPid,
+				RUNCNT	= RUNCNT + 1,
+				LAST	= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		WHERE	ROWID = :hRowid;
+		if(SQLCODE != 0)
+		{
+			g_Log.Write("[%d:%s] CRON_TAB ST UPDATE ERROR[%s][%s]",
+				g_Pid, __FILE__, hRowid, SQLERRMSG);
+			return FALSE;		
+		}
+	}
+	return TRUE;
+}
+
+int KillAllProcessDB()
+{
+	EXEC SQL BEGIN DECLARE SECTION ;
+	char rowid[20];
+	char    name        [128 + 1];
+    int     pid                  ;
+	EXEC SQL END DECLARE SECTION ;
+	int i;
+
+    PSInfo pinfo;
+
+	EXEC SQL
+	DECLARE CRON_TABLE_KEY_1 CURSOR FOR
+	SELECT	ROWID,
+			PID,
+			NAME
+	FROM	CRON_TAB
+	WHERE	1=1
+	AND		PID > 1
+	AND		USEYN in ('Y', 'y')
+	;
+	EXEC SQL OPEN CRON_TABLE_KEY_1;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+		return FALSE;
+	}
+
+	for(i = 0; ;i++)
+	{
+		memset(&pinfo, 0x00, sizeof(PSInfo));
+		memset(rowid, 0x00, sizeof(rowid));
+		memset(name, 0x00, sizeof(name));
+		pid = 0;
+
+		EXEC SQL FETCH CRON_TABLE_KEY_1
+		INTO	:rowid,
+				:pid,
+				:name
+		;
+
+		if (SQLCODE != 0) break;
+
+		memcpy(pinfo.rowid    , rowid    , strlen(rowid    ));
+		memcpy(pinfo.name     , name     , strlen(name     ));
+        pinfo.pid = pid;
+
+		killPS(pid, &pinfo);
+	}
+	EXEC SQL CLOSE CRON_TABLE_KEY_1;
+	return TRUE;
+}
+
+void Terminate()
+{
+	signal(SIGCHLD, SIG_IGN);
+    g_Log.Write("[%d:%s] Kill Child List",
+        g_Pid, __FILE__);
+    KillAllProcessDB();
+	if(g_IFSvr)  delete g_IFSvr;
+	g_PSList.Empty();
+	delete &g_PSList;
+	g_Log.Close();
+}
+
+int IFHandler(SockLib *Class, int cmd, int len, char *data, void *tmp)
+{
+	switch(cmd)
+	{
+		case TS_START:
+			g_Log.Write("[%d:%s] IFHandler Connect From[%s][%d] T[%d]",
+				g_Pid, __FILE__, Class->m_Name, Class->m_rfd, Class->m_tid);
+			break;
+		case TS_DATA:
+            g_Log.Write("[%d:%s] IFHandler Data Recv From[%s][%d] L[%d]",
+                g_Pid, __FILE__, Class->m_Name, Class->m_rfd, len);
+            g_Log.Write("[%d:%s] Data[%s]", g_Pid, __FILE__, data);
+
+			if(!memcmp(data+4, "RELOAD", 6))
+			{
+                gi_ListChange = 1;
+			}
+			break;
+		case TS_TIMEOUT:
+			break;
+		case TS_CLOSE:
+			g_Log.Write("[%d:%s] IFHandler DisConnect FD[%d] T[%d]",
+				g_Pid, __FILE__, Class->m_rfd, Class->m_tid);
+			delete Class;
+			break;
+	}
+	return 1;
+}
+
+int LsnHandler(SockLib *Class, int cmd, int len, char *data, void *tmp)
+{
+	switch(cmd)
+	{
+		case TS_START:
+			g_Log.Write("[%d:%s] LsnHandler Listen From[%s][%d] T[%d]",
+				g_Pid, __FILE__, Class->m_Name, Class->m_rfd, Class->m_tid);
+			break;
+		case TS_DATA:
+			g_Log.Write("[%d:%s] Accept Fd[%d]", g_Pid, __FILE__, len);
+			{
+				SockLib *IFClass = new SockLib;
+				if(IFClass->Create(0, NULL, SOCK_STREAM, len) != ERROR)
+				{
+					IFClass->SetHandler(IFHandler);
+					IFClass->SetPacketLength(4);
+					IFClass->Start();
+				}
+				else return -1;
+			}
+			break;
+		case TS_TIMEOUT:
+			break;
+		case TS_CLOSE:
+			g_Log.Write("[%d:%s] LsnHandler DisConnect FD[%d] T[%d]",
+				g_Pid, __FILE__, Class->m_rfd, Class->m_tid);
+			delete Class;
+			g_IFSvr = NULL;
+			break;
+	}
+	return 1;
+}
+
+SockLib *CreateTcpSvr(int port)
+{
+	SockLib *ConSvrSocket = new SockLib();
+	if(port < 0) return NULL;
+	if(ConSvrSocket->Create(port) < 0) return NULL;
+	if(ConSvrSocket->Bind() < 0) 
+	{
+		ConSvrSocket->Close();
+		delete ConSvrSocket;
+		return NULL;
+	}
+	ConSvrSocket->Listen();
+	return ConSvrSocket;
+}
+
+int InitSession()
+{
+	SockLib *ConSvr = CreateTcpSvr(gi_Port);
+	if(ConSvr == NULL) 
+	{
+		g_Log.Write("[%d:%s] Create TCP Server Error", g_Pid, __FILE__);
+		return FALSE;
+	}
+	else 
+	{
+		ConSvr->SetHandler(LsnHandler);
+		ConSvr->StartDm();
+		g_IFSvr = ConSvr;
+		g_Log.Write("[%d:%s] ConSvr Listen Port[%d]", 
+			g_Pid, __FILE__, gi_Port);
+	}
+	return TRUE;
+}
+
+int MainLoop()
+{
+    char toDate[8];
+    memset(toDate, 0x00, sizeof(toDate));
+	PrintProcessList();
+
+	g_Log.Write("[%d:%s] Start Main Loop ==========", g_Pid, __FILE__);
+		
+	while(g_Running)
+	{
+		sleep(1);
+        CheckDate(toDate);
+
+        if(g_IFSvr == NULL) InitSession();
+        RunningClient();
+        //RunningClientDB();
+	}
+	g_Log.Write("[%d:%s] Stop Main Loop ===========", g_Pid, __FILE__);
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	if(!Initialize(argc, argv)) 
+    {
+		Terminate();
+		return 0;
+	}
+
+	MainLoop();
+	Terminate();
+    g_Log.Write("[%d:%s] Process End ==============",
+        g_Pid, __FILE__);
+	return 0;
+}
