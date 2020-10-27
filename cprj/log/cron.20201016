@@ -1,0 +1,126 @@
+[14:19:03-899020][194964:cron.cc] DB CONNECT
+[14:19:03-902025][194964:cron.cc] ConSvr Listen Port[16384]
+[14:19:03-902048][cron] == PROCESS LIST ==
+[14:19:03-902075][cron] [0][] PID[0]
+[14:19:03-902075][194964:cron.cc] LsnHandler Listen From[localhost][8] T[-1214662912]
+[14:19:03-902083][cron] [1][] PID[0]
+[14:19:03-902089][cron] [2][] PID[0]
+[14:19:03-902094][cron] [3][] PID[0]
+[14:19:03-902100][cron] [4][] PID[0]
+[14:19:03-902109][cron] [5][] PID[0]
+[14:19:03-902114][cron] [6][] PID[0]
+[14:19:03-902137][cron] ==================
+[14:19:03-902144][194964:cron.cc] Start Main Loop ==========
+[14:19:04-902222][194964:cron.cc] Day Changed [20201016141904][]
+[14:19:04-903106][194964:cron.cc] BizDiv [1]
+[14:19:40-534700][194964:cron.cc] SIGTERM Message Receive
+[14:19:40-535240][194964:cron.cc] Stop Main Loop ===========
+[14:19:40-535276][194964:cron.cc] Kill Child List
+[14:19:40-537457][194964:cron.cc] KILL PROCESS[343531][TEST-SHELL1]
+[14:19:40-537490][194964:cron.cc] KILL FAILURE[3][343531][TEST-SHELL1]
+[14:19:40-541875][194964:cron.cc] KILL PROCESS[343533][TEST-SHELL2]
+[14:19:40-541901][194964:cron.cc] KILL FAILURE[3][343533][TEST-SHELL2]
+[14:19:40-542813][194964:cron.cc] Process End ==============
+[14:19:48-500265][194982:cron.cc] DB CONNECT
+[14:19:48-501097][194982:cron.cc] ConSvr Listen Port[16384]
+[14:19:48-501121][cron] == PROCESS LIST ==
+[14:19:48-501151][cron] [0][] PID[0]
+[14:19:48-501178][cron] [1][] PID[0]
+[14:19:48-501178][194982:cron.cc] LsnHandler Listen From[localhost][8] T[851625728]
+[14:19:48-501199][cron] [2][] PID[0]
+[14:19:48-501220][cron] [3][] PID[0]
+[14:19:48-501227][cron] [4][] PID[0]
+[14:19:48-501233][cron] [5][] PID[0]
+[14:19:48-501239][cron] [6][] PID[0]
+[14:19:48-501257][cron] ==================
+[14:19:48-501278][194982:cron.cc] Start Main Loop ==========
+[14:19:49-501351][194982:cron.cc] Day Changed [20201016141949][]
+[14:19:49-501743][194982:cron.cc] BizDiv [1]
+[14:19:57-799806][194982:cron.cc] SIGTERM Message Receive
+[14:19:57-800329][194982:cron.cc] Stop Main Loop ===========
+[14:19:57-800346][194982:cron.cc] Kill Child List
+[14:19:57-800615][194982:cron.cc] Process End ==============
+[14:26:45-694445][195186:cron.cc] DB CONNECT
+[14:26:45-695320][195186:cron.cc] ConSvr Listen Port[16384]
+[14:26:45-695339][cron] == PROCESS LIST ==
+[14:26:45-695347][cron] [0][] PID[4294967295]
+[14:26:45-695374][cron] [1][] PID[4294967295]
+[14:26:45-695374][195186:cron.cc] LsnHandler Listen From[localhost][8] T[199026432]
+[14:26:45-695395][cron] [2][] PID[4294967295]
+[14:26:45-695402][cron] [3][] PID[4294967295]
+[14:26:45-695408][cron] [4][] PID[4294967295]
+[14:26:45-695415][cron] [5][] PID[4294967295]
+[14:26:45-695421][cron] [6][] PID[4294967295]
+[14:26:45-695439][cron] ==================
+[14:26:45-695445][195186:cron.cc] Start Main Loop ==========
+[14:26:46-695624][195186:cron.cc] Day Changed [20201016142646][]
+[14:26:46-696021][195186:cron.cc] BizDiv [1]
+[14:27:03-504918][195186:cron.cc] SIGTERM Message Receive
+[14:27:03-505713][195186:cron.cc] Stop Main Loop ===========
+[14:27:03-505731][195186:cron.cc] Kill Child List
+[14:27:03-505993][195186:cron.cc] Process End ==============
+[14:29:17-465867][195262:cron.cc] DB CONNECT
+[14:29:17-466884][195262:cron.cc] ConSvr Listen Port[16384]
+[14:29:17-466902][cron] == PROCESS LIST ==
+[14:29:17-466910][cron] [0][TEST-CLIENT] PID[4294967295]
+[14:29:17-466938][cron] [1][TEST-SHELL1] PID[4294967295]
+[14:29:17-466938][195262:cron.cc] LsnHandler Listen From[localhost][8] T[-22399232]
+[14:29:17-466960][cron] [2][TEST-SHELL2] PID[4294967295]
+[14:29:17-466966][cron] [3][TEST-SHELL1] PID[4294967295]
+[14:29:17-466972][cron] [4][TEST-SHELL2] PID[4294967295]
+[14:29:17-466980][cron] [5][TEST-SHELL1] PID[4294967295]
+[14:29:17-466986][cron] [6][TEST-SHELL2] PID[4294967295]
+[14:29:17-466993][cron] ==================
+[14:29:17-467000][195262:cron.cc] Start Main Loop ==========
+[14:29:18-467196][195262:cron.cc] Day Changed [20201016142918][]
+[14:29:18-467550][195262:cron.cc] BizDiv [1]
+[14:29:44-845116][195262:cron.cc] SIGTERM Message Receive
+[14:29:44-845948][195262:cron.cc] Stop Main Loop ===========
+[14:29:44-845971][195262:cron.cc] Kill Child List
+[14:29:44-846236][195262:cron.cc] Process End ==============
+[14:29:54-281164][195284:cron.cc] DB CONNECT
+[14:29:54-282115][195284:cron.cc] ConSvr Listen Port[16384]
+[14:29:54-282170][195284:cron.cc] LsnHandler Listen From[localhost][8] T[-1205840128]
+[14:29:54-282245][cron] == PROCESS LIST ==
+[14:29:54-282260][cron] [0][TEST-CLIENT] PID[-1]
+[14:29:54-282267][cron] [1][TEST-SHELL1] PID[-1]
+[14:29:54-282274][cron] [2][TEST-SHELL2] PID[-1]
+[14:29:54-282280][cron] [3][TEST-SHELL1] PID[-1]
+[14:29:54-282285][cron] [4][TEST-SHELL2] PID[-1]
+[14:29:54-282291][cron] [5][TEST-SHELL1] PID[-1]
+[14:29:54-282297][cron] [6][TEST-SHELL2] PID[-1]
+[14:29:54-282317][cron] ==================
+[14:29:54-282323][195284:cron.cc] Start Main Loop ==========
+[14:29:55-282429][195284:cron.cc] Day Changed [20201016142955][]
+[14:29:55-282799][195284:cron.cc] BizDiv [1]
+[14:51:49-337039][195667:cron.cc] DB CONNECT
+[14:51:49-338038][195667:cron.cc] Create TCP Server Error
+[14:51:49-338059][195667:cron.cc] Kill Child List
+[14:52:03-747978][195691:cron.cc] DB CONNECT
+[14:52:03-748925][195691:cron.cc] Create TCP Server Error
+[14:52:03-748944][195691:cron.cc] Kill Child List
+[14:53:00-730977][195730:cron.cc] DB CONNECT
+[14:53:00-731055][195730:cron.cc] Create TCP Server Error
+[14:53:00-731068][195730:cron.cc] Kill Child List
+[14:53:14-286478][195284:cron.cc] SIGTERM Message Receive
+[14:53:14-287104][195284:cron.cc] Stop Main Loop ===========
+[14:53:14-287123][195284:cron.cc] Kill Child List
+[14:53:14-287460][195284:cron.cc] Process End ==============
+[14:53:19-972301][195744:cron.cc] DB CONNECT
+[14:53:19-972409][195744:cron.cc] ConSvr Listen Port[16384]
+[14:53:19-972456][195744:cron.cc] LsnHandler Listen From[localhost][8] T[-1888069888]
+[14:53:19-973167][cron] == PROCESS LIST ==
+[14:53:19-973185][cron] [0][TEST-CLIENT] PID[-1]
+[14:53:19-973193][cron] [1][TEST-SHELL1] PID[-1]
+[14:53:19-973199][cron] [2][TEST-SHELL2] PID[-1]
+[14:53:19-973205][cron] [3][TEST-SHELL1] PID[-1]
+[14:53:19-973211][cron] [4][TEST-SHELL2] PID[-1]
+[14:53:19-973217][cron] [5][TEST-SHELL1] PID[-1]
+[14:53:19-973223][cron] [6][TEST-SHELL2] PID[-1]
+[14:53:19-973230][cron] ==================
+[14:53:19-973237][195744:cron.cc] Start Main Loop ==========
+[14:53:20-973312][195744:cron.cc] Day Changed [20201016145320][]
+[14:53:20-973669][195744:cron.cc] BizDiv [1]
+[14:53:40-503265][195744:cron.cc] SIGTERM Message Receive
+[14:53:40-503977][195744:cron.cc] Stop Main Loop ===========
+[14:53:40-503993][195744:cron.cc] Kill Child List

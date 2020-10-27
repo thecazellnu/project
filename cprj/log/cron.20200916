@@ -1,0 +1,46 @@
+[00:00:00-727941][31657:cron.cc] Day Changed [20200916000000][20200915]
+[00:00:00-728288][31657:cron.cc] BizDiv [1]
+[00:00:13-004043][31657:cron.cc] SIGTERM Message Receive
+[00:00:13-004560][31657:cron.cc] Stop Main Loop ===========
+[00:00:13-004580][31657:cron.cc] Kill Child List
+[00:00:13-004940][31657:cron.cc] Process End ==============
+[10:23:35-418712][74811:cron.cc] DB CONNECT
+[10:23:35-418736][74811:cron.cc] Start Main Loop ==========
+[10:23:35-418825][74811:cron.cc] ConSvr Listen Port[16384]
+[10:23:35-418878][74811:cron.cc] LsnHandler Listen From[localhost][8] T[1489385216]
+[10:23:36-418950][74811:cron.cc] Day Changed [20200916102336][]
+[10:23:36-419469][74811:cron.cc] BizDiv [1]
+[11:07:38-577196][74811:cron.cc] SIGTERM Message Receive
+[11:07:38-577899][74811:cron.cc] Stop Main Loop ===========
+[11:07:38-577916][74811:cron.cc] Kill Child List
+[11:07:38-578160][74811:cron.cc] Process End ==============
+[11:08:16-728778][79749:cron.cc] DB CONNECT
+[11:08:16-728801][79749:cron.cc] Start Main Loop ==========
+[11:08:17-728994][79749:cron.cc] Day Changed [20200916110817][]
+[11:08:17-729471][79749:cron.cc] BizDiv [1]
+[11:11:58-799186][79749:cron.cc] SIGTERM Message Receive
+[11:11:58-799885][79749:cron.cc] Stop Main Loop ===========
+[11:11:58-799902][79749:cron.cc] Kill Child List
+[11:11:58-800160][79749:cron.cc] Process End ==============
+[11:12:30-990793][80341:cron.cc] DB CONNECT
+[11:12:30-990815][80341:cron.cc] Start Main Loop ==========
+[11:12:30-990935][80341:cron.cc] ConSvr Listen Port[16384]
+[11:12:30-990984][80341:cron.cc] LsnHandler Listen From[localhost][8] T[21886720]
+[11:12:31-991117][80341:cron.cc] Day Changed [20200916111231][]
+[11:12:31-991587][80341:cron.cc] BizDiv [1]
+[11:15:38-599044][80341:cron.cc] Accept Fd[9]
+[11:15:38-599162][80341:cron.cc] IFHandler Connect From[127.000.000.001][9] T[12830464]
+[11:15:52-744617][80341:cron.cc] IFHandler DisConnect FD[-1] T[-1]
+[11:18:52-841565][80341:cron.cc] SIGTERM Message Receive
+[11:18:52-842168][80341:cron.cc] Stop Main Loop ===========
+[11:18:52-842182][80341:cron.cc] Kill Child List
+[11:18:52-842439][80341:cron.cc] Process End ==============
+[11:19:19-976011][81148:cron.cc] DB CONNECT
+[11:19:19-976033][81148:cron.cc] Start Main Loop ==========
+[11:19:19-976150][81148:cron.cc] ConSvr Listen Port[16384]
+[11:19:19-976202][81148:cron.cc] LsnHandler Listen From[localhost][8] T[-1247852800]
+[11:19:20-976332][81148:cron.cc] Day Changed [20200916111920][]
+[11:19:20-976803][81148:cron.cc] BizDiv [1]
+[11:20:25-673823][81148:cron.cc] Accept Fd[9]
+[11:20:25-673959][81148:cron.cc] IFHandler Connect From[127.000.000.001][9] T[-1256909056]
+[11:20:30-216553][81148:cron.cc] IFHandler DisConnect FD[-1] T[-1]

@@ -1,0 +1,117 @@
+[22:49:37-599822][279832:cron.cc] DB CONNECT
+[22:49:37-599917][279832:cron.cc] Start Main Loop ==========
+[22:49:37-600055][279832:cron.cc] ConSvr Listen Port[16384]
+[22:49:37-600103][279832:cron.cc] LsnHandler Listen From[localhost][8] T[791508736]
+[22:49:38-600234][279832:cron.cc] Day Changed [20200919224938][]
+[22:49:38-600689][279832:cron.cc] BizDiv [0]
+[23:02:53-969721][279832:cron.cc] SIGTERM Message Receive
+[23:02:53-970228][279832:cron.cc] Stop Main Loop ===========
+[23:02:53-970243][279832:cron.cc] Kill Child List
+[23:02:53-978264][279832:cron.cc] BF KILL PROCESS[209184][TEST-SHELL1]
+[23:02:53-982809][279832:cron.cc] KILL PROCESS[209184][TEST-SHELL1]
+[23:02:53-983044][279832:cron.cc] Process End ==============
+[23:03:01-655001][280083:cron.cc] DB CONNECT
+[23:03:01-655023][280083:cron.cc] Start Main Loop ==========
+[23:03:01-655140][280083:cron.cc] ConSvr Listen Port[16384]
+[23:03:01-655193][280083:cron.cc] LsnHandler Listen From[localhost][8] T[456591104]
+[23:03:02-655321][280083:cron.cc] Day Changed [20200919230302][]
+[23:03:02-655797][280083:cron.cc] BizDiv [0]
+[23:05:00-750162][280083:cron.cc] Process Start: [280245][TEST-SHELL1]
+[23:05:00-750217][280083:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][(null)][(null)][(null)][(null)]
+[23:05:00-750452][280083:cron.cc] Execute Error: [TEST-SHELL1][8]
+[23:08:50-367721][280083:cron.cc] SIGTERM Message Receive
+[23:08:53-622364][280302:cron.cc] DB CONNECT
+[23:08:53-622404][280302:cron.cc] Start Main Loop ==========
+[23:08:53-622545][280302:cron.cc] Create TCP Server Error
+[23:08:53-622561][280302:cron.cc] Kill Child List
+[23:08:53-623206][280302:cron.cc] Process End ==============
+[23:09:06-671946][280083:cron.cc] SIGTERM Message Receive
+[23:09:27-605923][280314:cron.cc] DB CONNECT
+[23:09:27-605951][280314:cron.cc] Start Main Loop ==========
+[23:09:27-606049][280314:cron.cc] ConSvr Listen Port[16384]
+[23:09:27-606104][280314:cron.cc] LsnHandler Listen From[localhost][8] T[649656064]
+[23:09:28-606231][280314:cron.cc] Day Changed [20200919230928][]
+[23:09:28-606711][280314:cron.cc] BizDiv [0]
+[23:10:00-638999][280314:cron.cc] Process Start: [280332][TEST-SHELL1]
+[23:10:00-639178][280314:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][(null)][(null)][(null)][(null)]
+[23:10:00-639415][280314:cron.cc] Execute Error: [TEST-SHELL1][8]
+[23:10:00-642244][280314:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[23:14:29-012581][280502:cron.cc] DB CONNECT
+[23:14:29-012661][280502:cron.cc] Start Main Loop ==========
+[23:14:29-012779][280502:cron.cc] ConSvr Listen Port[16384]
+[23:14:29-012881][280502:cron.cc] LsnHandler Listen From[localhost][9] T[1150408448]
+[23:14:30-012915][280502:cron.cc] Day Changed [20200919231430][]
+[23:14:30-013448][280502:cron.cc] BizDiv [0]
+[23:15:00-043148][280502:cron.cc] Process Start: [280515][TEST-SHELL1]
+[23:15:00-043196][280502:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][C][(null)][(null)][(null)]
+[23:15:00-043321][280502:cron.cc] Execute Error: [TEST-SHELL1][8]
+[23:20:58-907123][280597:cron.cc] DB CONNECT
+[23:20:58-907202][280597:cron.cc] Start Main Loop ==========
+[23:20:58-907357][280597:cron.cc] ConSvr Listen Port[16384]
+[23:20:58-907392][280597:cron.cc] LsnHandler Listen From[localhost][8] T[445179648]
+[23:20:59-907445][280597:cron.cc] Day Changed [20200919232059][]
+[23:20:59-907953][280597:cron.cc] BizDiv [0]
+[23:22:00-966160][280597:cron.cc] Process Start: [280619][TEST-SHELL1]
+[23:22:00-966209][280597:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][C][(null)][(null)][(null)]
+[23:22:00-969236][280597:cron.cc] Process Start: [280623][TEST-SHELL2]
+[23:22:00-969428][280597:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][D][(null)][(null)][(null)]
+[23:22:05-975246][280597:cron.cc] Process Start: [280627][TEST-SHELL1]
+[23:22:05-975336][280597:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][E][(null)][(null)][(null)]
+[23:22:08-980831][280597:cron.cc] Process Start: [280631][TEST-SHELL2]
+[23:22:08-980900][280597:cron.cc] execv2[/prj/cprj/shl/test.sh][test.sh][F][(null)][(null)][(null)]
+[23:25:00-977250][280597:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[23:25:05-983582][280597:cron.cc] CRON_TAB UPDATE ERROR[ORA-24909: call in progress. Current operation cancelled
+             ]
+[23:39:03-925816][281095:cron.cc] DB CONNECT
+[23:39:03-925842][281095:cron.cc] Start Main Loop ==========
+[23:39:03-925964][281095:cron.cc] ConSvr Listen Port[16384]
+[23:39:03-926028][281095:cron.cc] LsnHandler Listen From[localhost][9] T[1743460096]
+[23:39:04-926150][281095:cron.cc] Day Changed [20200919233904][]
+[23:39:04-926673][281095:cron.cc] BizDiv [0]
+[23:40:00-976216][281095:cron.cc] Process Start: [281109][TEST-SHELL1]
+[23:40:00-979274][281095:cron.cc] Process Start: [281113][TEST-SHELL2]
+[23:40:05-985338][281095:cron.cc] Process Start: [281117][TEST-SHELL1]
+[23:40:10-993380][281095:cron.cc] Process Start: [281121][TEST-SHELL2]
+[23:43:00-987810][281095:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[23:43:00-988243][281095:cron.cc] DATE INFO SELECT ERROR[ORA-12612: TNS:connection is busy
+                                    ]
+[23:44:57-145881][281224:cron.cc] DB CONNECT
+[23:44:57-145907][281224:cron.cc] Start Main Loop ==========
+[23:44:57-146007][281224:cron.cc] ConSvr Listen Port[16384]
+[23:44:57-146056][281224:cron.cc] LsnHandler Listen From[localhost][8] T[-1169557760]
+[23:44:58-146191][281224:cron.cc] Day Changed [20200919234458][]
+[23:44:58-146712][281224:cron.cc] BizDiv [0]
+[23:46:00-208221][281224:cron.cc] Process Start: [281243][TEST-SHELL1]
+[23:46:00-211367][281224:cron.cc] Process Start: [281247][TEST-SHELL2]
+[23:46:00-212923][281224:cron.cc] Process Start: [281249][TEST-SHELL1]
+[23:46:00-214131][281224:cron.cc] Process Start: [281251][TEST-SHELL2]
+[23:49:00-216358][281224:cron.cc] CRON_TAB UPDATE[281243]-1
+[23:49:00-219578][281224:cron.cc] CRON_TAB UPDATE[281247]-1
+[23:49:00-219805][281224:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[23:49:00-220957][281224:cron.cc] CRON_TAB UPDATE[281249]-1
+[23:49:00-221022][281224:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[23:49:00-222041][281224:cron.cc] CRON_TAB UPDATE[281251]-1
+[23:49:00-222090][281224:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[23:50:01-743194][281344:cron.cc] DB CONNECT
+[23:50:01-743220][281344:cron.cc] Start Main Loop ==========
+[23:50:01-743369][281344:cron.cc] ConSvr Listen Port[16384]
+[23:50:01-743408][281344:cron.cc] LsnHandler Listen From[localhost][8] T[-196016384]
+[23:50:02-743405][281344:cron.cc] Day Changed [20200919235002][]
+[23:50:02-743912][281344:cron.cc] BizDiv [0]
+[23:51:00-796900][281344:cron.cc] Process Start: [281359][TEST-SHELL1]
+[23:51:00-800119][281344:cron.cc] Process Start: [281363][TEST-SHELL2]
+[23:51:00-801894][281344:cron.cc] Process Start: [281365][TEST-SHELL1]
+[23:51:00-803224][281344:cron.cc] Process Start: [281369][TEST-SHELL2]
+[23:54:00-805214][281344:cron.cc] CRON_TAB UPDATE[281359]-1
+[23:54:00-805701][281344:cron.cc] CRON_TAB UPDATE[281359]-1ED
+[23:54:00-807720][281344:cron.cc] CRON_TAB UPDATE[281363]-1
+[23:54:00-807921][281344:cron.cc] CRON_TAB UPDATE[281363]-1ED
+[23:54:00-809690][281344:cron.cc] CRON_TAB UPDATE[281365]-1
+[23:54:00-809932][281344:cron.cc] CRON_TAB UPDATE[281365]-1ED
+[23:54:00-810851][281344:cron.cc] CRON_TAB UPDATE[281369]-1

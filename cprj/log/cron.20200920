@@ -1,0 +1,124 @@
+[00:04:43-910466][281608:cron.cc] DB CONNECT
+[00:04:43-910541][281608:cron.cc] Start Main Loop ==========
+[00:04:43-910658][281608:cron.cc] ConSvr Listen Port[16384]
+[00:04:43-910708][281608:cron.cc] LsnHandler Listen From[localhost][8] T[-727456000]
+[00:04:44-910859][281608:cron.cc] Day Changed [20200920000444][]
+[00:04:44-911404][281608:cron.cc] BizDiv [0]
+[00:06:00-985088][281608:cron.cc] Process Start: [281633][TEST-SHELL1]
+[00:06:00-988101][281608:cron.cc] Process Start: [281637][TEST-SHELL2]
+[00:06:00-989660][281608:cron.cc] Process Start: [281639][TEST-SHELL1]
+[00:06:00-991067][281608:cron.cc] Process Start: [281643][TEST-SHELL2]
+[00:09:00-993553][281608:cron.cc] CRON_TAB UPDATE[281633]-1
+[00:09:00-993973][281608:cron.cc] CRON_TAB UPDATE[281633]-1ED
+[00:09:00-995960][281608:cron.cc] CRON_TAB UPDATE[281637]-1
+[00:09:00-996555][281608:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[00:09:00-996892][281608:cron.cc] DATE INFO SELECT ERROR[ORA-12612: TNS:connection is busy
+                                    ]
+[00:09:00-997620][281608:cron.cc] CRON_TAB UPDATE[281639]-1
+[00:09:00-997664][281608:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:00-997730][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:00-998737][281608:cron.cc] CRON_TAB UPDATE[281643]-1
+[00:09:00-998775][281608:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:00-998841][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:01-999061][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:02-999311][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:03-999469][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:04-999705][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:05-999872][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:06-000094][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:07-000330][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:08-000463][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:09-000696][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:10-000932][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:11-001160][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:13-001321][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:14-001479][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:15-001715][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:16-001948][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:17-002164][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:18-002412][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:19-002619][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:20-002853][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:21-003086][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:22-003339][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:23-003510][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:24-003707][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:25-003940][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:26-004159][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:27-004390][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:28-004525][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:29-004737][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:30-004969][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:31-005200][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:32-005446][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:32-901354][281608:cron.cc] SIGTERM Message Receive
+[00:09:32-901443][281608:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:32-901470][281608:cron.cc] Stop Main Loop ===========
+[00:09:32-901478][281608:cron.cc] Kill Child List
+[00:09:32-901503][281608:cron.cc] CURSOR OPEN ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:09:32-901567][281608:cron.cc] Process End ==============
+[00:14:09-783538][281782:cron.cc] DB CONNECT
+[00:14:09-783564][281782:cron.cc] Start Main Loop ==========
+[00:14:09-783709][281782:cron.cc] ConSvr Listen Port[16384]
+[00:14:09-783781][281782:cron.cc] LsnHandler Listen From[localhost][8] T[2099320576]
+[00:14:10-783895][281782:cron.cc] Day Changed [20200920001410][]
+[00:14:10-784428][281782:cron.cc] BizDiv [0]
+[00:15:00-834170][281782:cron.cc] Process Start: [281799][TEST-SHELL1]
+[00:15:00-837323][281782:cron.cc] Process Start: [281803][TEST-SHELL2]
+[00:15:00-838871][281782:cron.cc] Process Start: [281805][TEST-SHELL1]
+[00:15:00-840097][281782:cron.cc] Process Start: [281807][TEST-SHELL2]
+[00:18:00-842418][281782:cron.cc] CRON_TAB UPDATE[281799]-1
+[00:18:00-842867][281782:cron.cc] CRON_TAB UPDATE[281799]-1ED
+[00:18:00-844991][281782:cron.cc] CRON_TAB UPDATE[281803]-1
+[00:18:00-845530][281782:cron.cc] CRON_TAB UPDATE ERROR[ORA-01013: user requested cancel of current operation
+                ]
+[00:18:00-845805][281782:cron.cc] DATE INFO SELECT ERROR[ORA-12612: TNS:connection is busy
+                                    ]
+[00:18:00-847120][281782:cron.cc] CRON_TAB UPDATE[281805]-1
+[00:18:00-847179][281782:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:18:00-847221][281782:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:18:00-847809][281782:cron.cc] CRON_TAB UPDATE[281807]-1
+[00:18:00-847861][281782:cron.cc] CRON_TAB UPDATE ERROR[ORA-03114: not connected to ORACLE
+                                   ]
+[00:18:00-847894][281782:cron.cc] DATE INFO SELECT ERROR[ORA-03114: not connected to ORACLE
+                                   ]

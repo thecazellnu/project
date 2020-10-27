@@ -1,0 +1,3 @@
+#!/bin/sh
+export LANG=ko_KR.EUC-KR
+export NLS_LANG=KOREAN_KOREA.KO16MSWIN949

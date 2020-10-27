@@ -1,0 +1,7 @@
+[00:00:00-060001][81148:cron.cc] Day Changed [20200917000000][20200916]
+[00:00:00-060451][81148:cron.cc] BizDiv [1]
+[10:00:00-439346][81148:cron.cc] Process Start: [208353][TEST-CLIENT]
+[10:10:00-890712][81148:cron.cc] BF KILL PROCESS[208353][TEST-CLIENT]
+[10:10:00-891372][81148:cron.cc] child exit status = [1] pid=[208353]
+[10:11:00-939911][81148:cron.cc] Process Start: [209161][TEST-SHELL2]
+[10:11:10-950823][81148:cron.cc] Process Start: [209184][TEST-SHELL1]
