@@ -1,8 +1,8 @@
 CREATE TABLESPACE DEV_DAT
-DATAFILE '/home/oracle/base/oradata/ORCL/dev_dat.dbf' size 1G
-AUTOEXTEND ON NEXT 100M;
+DATAFILE '/u01/app/oracle/oradata/xe/dev_dat.dbf' size 100M
+AUTOEXTEND ON NEXT 5M;
 
 CREATE TABLESPACE DEV_IDX
-DATAFILE '/home/oracle/base/oradata/ORCL/dev_idx.dbf' size 100M
-AUTOEXTEND ON NEXT 10M;
+DATAFILE '/u01/app/oracle/oradata/xe/dev_idx.dbf' size 20M
+AUTOEXTEND ON NEXT 2M;
 

@@ -255,9 +255,7 @@ int Initialize(int argc, char **argv)
 	SignalSet();
 	SetLog();
 	if(DbConnect() != TRUE) return FALSE;
-	pthread_mutex_init(&g_Mutex, NULL);
 
-    if(InitSession() == FALSE) return FALSE;
 	LoadProcessList();
 
 	return TRUE;
@@ -296,35 +294,6 @@ void CheckDate(char *toDate)
             g_Pid, __FILE__, gs_bizdiv);
     }
     return ;
-}
-
-int GetDateInfoDB()
-{
-	EXEC SQL
-	SELECT	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
-			TO_CHAR(SYSDATE, 'D'),
-			TO_NUMBER(TO_CHAR(SYSDATE, 'DD')),
-			TO_NUMBER(SYSDATE - LAST_DAY(SYSDATE)),
-			--DAY_TYPE
-            CASE WHEN TO_CHAR(SYSDATE, 'D') IN ('1','7') THEN '0'
-            ELSE '1' END
-	INTO	:gs_datetime,
-			:gs_week,
-			:gi_monthday1,
-			:gi_monthday2,
-			:gs_bizdiv
-	FROM	DUAL --BFTDATE
-	WHERE	1=1
-	--AND		YYYYMMDD = TO_CHAR(SYSDATE, 'YYYYMMDD')
-	;
-	if(SQLCODE != 0)
-	{
-		g_Log.Write("[%d:%s] DATE INFO SELECT ERROR[%s]",
-			g_Pid, __FILE__, SQLERRMSG);
-		return FALSE;
-	}
-
-	return TRUE;
 }
 
 int GetLastDay(int year, int month)
@@ -367,6 +336,8 @@ int GetDateInfo(int div)
     if(div == 0) return TRUE;
 
     sprintf(gs_week, "%d", tp->tm_wday + 1);
+	if(tp->tm_wday < 5) gs_bizdiv[0] = '1';
+	else gs_bizdiv[0] = '0';
     gi_monthday1 = tp->tm_mday;
     lastday = GetLastDay(tp->tm_year+1900, tp->tm_mon+1);
     if(lastday < 0) return FALSE;
@@ -457,22 +428,13 @@ int killPS(int pid, PSInfo *pinfo)
 	g_Log.Write("[%d:%s] KILL PROCESS[%d][%s]",
 		g_Pid, __FILE__, pid, pinfo->name);
 	krtn = kill(pid, SIGTERM);
-	if(krtn < 0)
+	if(krtn < 0 || !g_Running)
 	{
-		g_Log.Write("[%d:%s] KILL FAILURE[%d][%d][%s]",
-			g_Pid, __FILE__, errno, pid, pinfo->name);
+		if(krtn < 0)
+			g_Log.Write("[%d:%s] KILL FAILURE[%d][%d][%s]",
+				g_Pid, __FILE__, errno, pid, pinfo->name);
 
-		if(UpdatePid(pinfo->rowid, -1) == TRUE)
-		{
-			pinfo->pid = -1;
-			EXEC SQL COMMIT;
-			return TRUE;
-		}
-		else
-		{
-			EXEC SQL ROLLBACK;
-			return FALSE;
-		}
+		pinfo->pid = -1;
 	}
 	return TRUE;
 }
@@ -482,7 +444,7 @@ int RunningClient()
 	CNode  *pNode;
     PSInfo *pinfo;
 
-    if(GetDateInfoDB() == FALSE) return FALSE;
+    if(GetDateInfo(1) == FALSE) return FALSE;
 #if LOG_LV 
 g_Log.Write("[%d:%s] GetDateDB[%s][%s][%d][%d][%s]", g_Pid, __FILE__, gs_datetime, gs_week, gi_monthday1, gi_monthday2, gs_bizdiv); 
 #endif		
@@ -551,205 +513,6 @@ g_Log.Write("[%d:%s] GetDateDB[%s][%s][%d][%d][%s]", g_Pid, __FILE__, gs_datetim
     return TRUE;
 }
 
-int RunningClientDB()
-{
-	EXEC SQL BEGIN DECLARE SECTION ;
-	char    rowid[20];
-	char    name        [128 + 1];
-    char    month       [16  + 1];
-    char    week        [16  + 1];
-    char    bizday      [16  + 1];
-    char    execdate    [8   + 1];
-    char    attribute   [8   + 1];
-    char    bintype     [8   + 1];
-    char    sttime      [6   + 1];
-    char    edtime      [6   + 1];
-    char    path        [256 + 1];
-    char    argv        [256 + 1];
-    char    descript    [256 + 1];
-    char    useyn       [1   + 1];
-    char    last        [14  + 1];
-    int     pid                  ;
-    int     runcnt               ;
-	EXEC SQL END DECLARE SECTION ;
-	int i;
-
-    PSInfo pinfo;
-
-    if(GetDateInfoDB() == FALSE) return FALSE;
-#if LOG_LV 
-g_Log.Write("[%d:%s] GetDateDB[%s][%s][%d][%d][%s]", g_Pid, __FILE__, gs_datetime, gs_week, gi_monthday1, gi_monthday2, gs_bizdiv); 
-#endif		
-		
-	EXEC SQL DECLARE CRON_TABLE_KEY CURSOR FOR
-	SELECT	ROWID
-			,NAME
-			,MONTH
-			,WEEK
-			,BIZDAY
-			,EXECDATE
-			,ATTRIBUTE
-			,NVL(BINTYPE, ' ')
-			,STTIME
-			,EDTIME
-			,TRIM(PATH)
-			,NVL(TRIM(ARGV), ' ')
-			,NVL(DESCRIPT, ' ')
-			,NVL(USEYN, 'N')
-			,NVL(LAST, ' ')
-			,PID
-			,RUNCNT
-	FROM	CRON_TAB
-	WHERE	1=1
-	;
-	EXEC SQL OPEN CRON_TABLE_KEY;
-	if(SQLCODE != 0)
-	{
-		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
-			g_Pid, __FILE__, SQLERRMSG);
-		return FALSE;
-	}
-
-	for(i = 0; ;i++)
-	{
-        memset(&pinfo   , 0x00, sizeof(PSInfo   ));
-		memset(rowid    , 0x00, sizeof(rowid    ));
-		memset(name     , 0x00, sizeof(name     ));
-		memset(month    , 0x00, sizeof(month    ));
-		memset(week     , 0x00, sizeof(week     ));
-		memset(bizday   , 0x00, sizeof(bizday   ));
-		memset(execdate , 0x00, sizeof(execdate ));
-		memset(attribute, 0x00, sizeof(attribute));
-		memset(bintype  , 0x00, sizeof(bintype  ));
-		memset(sttime   , 0x00, sizeof(sttime   ));
-		memset(edtime   , 0x00, sizeof(edtime   ));
-		memset(path     , 0x00, sizeof(path     ));
-		memset(argv     , 0x00, sizeof(argv     ));
-		memset(descript , 0x00, sizeof(descript ));
-		memset(useyn    , 0x00, sizeof(useyn    ));
-		memset(last     , 0x00, sizeof(last     ));
-		pid = 0;
-		runcnt = 0;
-
-		EXEC SQL FETCH CRON_TABLE_KEY
-		INTO	:rowid
-				,:name
-				,:month
-				,:week
-				,:bizday
-				,:execdate
-				,:attribute
-				,:bintype
-				,:sttime
-				,:edtime
-				,:path
-				,:argv
-				,:descript
-				,:useyn
-				,:last
-				,:pid
-				,:runcnt
-		;
-
-		if (SQLCODE != 0) 
-		{
-            if(SQLCODE != 1403)
-                g_Log.Write("[%d:%s] CURSOR FETCH ERROR[%s]",
-                    g_Pid, __FILE__, SQLERRMSG);
-			break;
-		}
-#if 0 
-		g_Log.Write("[%d:%s] rowid    [%s]", g_Pid, __FILE__, rowid    );
-		g_Log.Write("[%d:%s] name     [%s]", g_Pid, __FILE__, name     );
-		g_Log.Write("[%d:%s] month    [%s]", g_Pid, __FILE__, month    );
-		g_Log.Write("[%d:%s] week     [%s]", g_Pid, __FILE__, week     );
-		g_Log.Write("[%d:%s] bizday   [%s]", g_Pid, __FILE__, bizday   );
-		g_Log.Write("[%d:%s] execdate [%s]", g_Pid, __FILE__, execdate );
-		g_Log.Write("[%d:%s] attribute[%s]", g_Pid, __FILE__, attribute);
-		g_Log.Write("[%d:%s] bintype  [%s]", g_Pid, __FILE__, bintype  );
-		g_Log.Write("[%d:%s] sttime   [%s]", g_Pid, __FILE__, sttime   );
-		g_Log.Write("[%d:%s] edtime   [%s]", g_Pid, __FILE__, edtime   );
-		g_Log.Write("[%d:%s] path     [%s]", g_Pid, __FILE__, path     );
-		g_Log.Write("[%d:%s] argv     [%s]", g_Pid, __FILE__, argv     );
-		g_Log.Write("[%d:%s] descript [%s]", g_Pid, __FILE__, descript );
-		g_Log.Write("[%d:%s] useyn    [%s]", g_Pid, __FILE__, useyn    );
-		g_Log.Write("[%d:%s] last     [%s]", g_Pid, __FILE__, last     );		
-#endif
-		memcpy(pinfo.rowid    , rowid    , strlen(rowid    ));
-		memcpy(pinfo.name     , name     , strlen(name     ));
-		memcpy(pinfo.month    , month    , strlen(month    ));
-		memcpy(pinfo.week     , week     , strlen(week     ));
-		memcpy(pinfo.bizday   , bizday   , strlen(bizday   ));
-		memcpy(pinfo.execdate , execdate , strlen(execdate ));
-		memcpy(pinfo.attribute, attribute, strlen(attribute));
-		memcpy(pinfo.bintype  , bintype  , strlen(bintype  ));
-		memcpy(pinfo.sttime   , sttime   , strlen(sttime   ));
-		memcpy(pinfo.edtime   , edtime   , strlen(edtime   ));
-		memcpy(pinfo.path     , path     , strlen(path     ));
-		memcpy(pinfo.argv     , argv     , strlen(argv     ));
-		memcpy(pinfo.descript , descript , strlen(descript ));
-		memcpy(pinfo.useyn    , useyn    , strlen(useyn    ));
-		memcpy(pinfo.last     , last     , strlen(last     ));		
-        pinfo.pid = pid;
-        pinfo.runcnt = runcnt;
-
-		if(useyn[0] != 'Y' && useyn[0] != 'y')
-		{
-			if(pid > 1) 
-				killPS(pid, &pinfo);
-		}
-		else
-		{
-			if(pid > 1)
-			{
-				if(!memcmp(attribute, "FOREVER", 7))
-				{
-					if(DiffMonthDay(month) == FALSE)
-                        killPS(pid, &pinfo);
-					if(DiffWeekDay(week) == FALSE)
-                        killPS(pid, &pinfo);
-					if(DiffBizDay(bizday) == FALSE)
-                        killPS(pid, &pinfo);
-					if(DiffDate(execdate) == FALSE)
-                        killPS(pid, &pinfo);
-						
-					if(memcmp(edtime, "000000", 6))
-					{
-						if(DiffTime(sttime, edtime) == FALSE)
-                            killPS(pid, &pinfo);
-					}
-				}
-			}
-			else
-			{
-				if(DiffMonthDay(month) == TRUE)
-					if(DiffWeekDay(week) == TRUE)
-						if(DiffBizDay(bizday) == TRUE)
-							if(DiffDate(execdate) == TRUE)
-								if(!memcmp(attribute, "FOREVER", 7))
-								{
-									if(DiffTime(sttime, edtime) == TRUE)
-										runPS(&pinfo);
-								}
-								else if(!memcmp(attribute, "ONCE", 4))
-								{
-									if(!memcmp(sttime, gs_datetime + 8, 6))
-										runPS(&pinfo);
-								}
-								else if(!memcmp(attribute, "BATCH", 5))
-								{
-									if(memcmp(last, gs_datetime, 8))
-										if(DiffTime(sttime, edtime) == TRUE)
-                                            runPS(&pinfo);
-								}
-			}
-		}
-	}
-	EXEC SQL CLOSE CRON_TABLE_KEY;
-
-    return TRUE;
-}
-
 int runPS(PSInfo *pinfo)
 {
 	int		pid;
@@ -808,9 +571,7 @@ g_Pid, __FILE__, pinfo->path, argv[0], argv[1], argv[2], argv[3], argv[4]);
 				g_Pid, __FILE__, pid, pinfo->name);
 
 			pinfo->pid = pid;
-			if(UpdatePid(pinfo->rowid, pid) == TRUE) EXEC SQL COMMIT;
-			else EXEC SQL ROLLBACK;
-					
+			pinfo->runcnt++;
 			break;
 	}
 
@@ -819,144 +580,134 @@ g_Pid, __FILE__, pinfo->path, argv[0], argv[1], argv[2], argv[3], argv[4]);
 
 int CheckChildProc(int pid)
 {
-	EXEC SQL BEGIN DECLARE SECTION;
-    int		hPid;
-	char	hRowid[20 +1];
-    EXEC SQL END DECLARE SECTION;
-    hPid = pid;
-
-    memset(hRowid, 0x00, sizeof(hRowid));
 	PSInfo *pinfo = g_PSList.SearchPid(pid);
-    memcpy(hRowid, pinfo->rowid, strlen(pinfo->rowid));
     
-	g_Log.Write("[%d:%s] CRON_TAB UPDATE[%d]-1",
-		g_Pid, __FILE__, hPid);
-
-	pthread_mutex_lock(&g_Mutex);
-	EXEC SQL
-	UPDATE	CRON_TAB
-	SET		PID = -1
-	WHERE	ROWID = :hRowid;
-	pthread_mutex_unlock(&g_Mutex);
-
-	if(SQLCODE != 0)
-	{
-		g_Log.Write("[%d:%s] CRON_TAB UPDATE ERROR[%s]",
-			g_Pid, __FILE__, SQLERRMSG);
-
-        EXEC SQL ROLLBACK;
-		return FALSE;		
-	}
-	g_Log.Write("[%d:%s] CRON_TAB UPDATE[%d]-1ED",
-		g_Pid, __FILE__, hPid);
 	pinfo->pid = -1;
 
-    EXEC SQL COMMIT;
 	return TRUE;
 }
 
-int UpdatePid(char *rowid, int pid)
-{
-	EXEC SQL BEGIN DECLARE SECTION;
-	char	hRowid[20 +1];
-    int		hPid;
-    EXEC SQL END DECLARE SECTION;
-
-    memset(hRowid, 0x00, sizeof(hRowid));
-    memcpy(hRowid, rowid, strlen(rowid));
-    hPid = pid;
-
-	if(hPid < 0)
-	{
-		EXEC SQL
-		UPDATE	CRON_TAB
-		SET		PID = :hPid
-		WHERE	ROWID = :hRowid;
-		if(SQLCODE != 0)
-		{
-			g_Log.Write("[%d:%s] CRON_TAB ED UPDATE ERROR[%s][%s]",
-				g_Pid, __FILE__, hRowid, SQLERRMSG);
-			return FALSE;		
-		}
-	}
-	else 
-	{
-		EXEC SQL
-		UPDATE	CRON_TAB
-		SET		PID		= :hPid,
-				RUNCNT	= RUNCNT + 1,
-				LAST	= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-		WHERE	ROWID = :hRowid;
-		if(SQLCODE != 0)
-		{
-			g_Log.Write("[%d:%s] CRON_TAB ST UPDATE ERROR[%s][%s]",
-				g_Pid, __FILE__, hRowid, SQLERRMSG);
-			return FALSE;		
-		}
-	}
-	return TRUE;
-}
-
-int KillAllProcessDB()
+int UpdateProcess(PSInfo *pinfo)
 {
 	EXEC SQL BEGIN DECLARE SECTION ;
-	char rowid[20];
+	char    rowid[20];
 	char    name        [128 + 1];
+    char    month       [16  + 1];
+    char    week        [16  + 1];
+    char    bizday      [16  + 1];
+    char    execdate    [8   + 1];
+    char    attribute   [8   + 1];
+    char    bintype     [8   + 1];
+    char    sttime      [6   + 1];
+    char    edtime      [6   + 1];
+    char    path        [256 + 1];
+    char    argv        [256 + 1];
+    char    descript    [256 + 1];
+    char    useyn       [1   + 1];
+    char    last        [14  + 1];
     int     pid                  ;
+    int     runcnt               ;
 	EXEC SQL END DECLARE SECTION ;
-	int i;
 
-    PSInfo pinfo;
+	memset(rowid    , 0x00, sizeof(rowid    ));
+	memset(name     , 0x00, sizeof(name     ));
+	memset(month    , 0x00, sizeof(month    ));
+	memset(week     , 0x00, sizeof(week     ));
+	memset(bizday   , 0x00, sizeof(bizday   ));
+	memset(execdate , 0x00, sizeof(execdate ));
+	memset(attribute, 0x00, sizeof(attribute));
+	memset(bintype  , 0x00, sizeof(bintype  ));
+	memset(sttime   , 0x00, sizeof(sttime   ));
+	memset(edtime   , 0x00, sizeof(edtime   ));
+	memset(path     , 0x00, sizeof(path     ));
+	memset(argv     , 0x00, sizeof(argv     ));
+	memset(descript , 0x00, sizeof(descript ));
+	memset(useyn    , 0x00, sizeof(useyn    ));
+	memset(last     , 0x00, sizeof(last     ));
+	pid = 0;
+	runcnt = 0;
+
+    memcpy(rowid    , pinfo->rowid    , strlen(pinfo->rowid    ));
+    memcpy(name     , pinfo->name     , strlen(pinfo->name     ));
+    memcpy(month    , pinfo->month    , strlen(pinfo->month    ));
+    memcpy(week     , pinfo->week     , strlen(pinfo->week     ));
+    memcpy(bizday   , pinfo->bizday   , strlen(pinfo->bizday   ));
+    memcpy(execdate , pinfo->execdate , strlen(pinfo->execdate ));
+    memcpy(attribute, pinfo->attribute, strlen(pinfo->attribute));
+    memcpy(bintype  , pinfo->bintype  , strlen(pinfo->bintype  ));
+    memcpy(sttime   , pinfo->sttime   , strlen(pinfo->sttime   ));
+    memcpy(edtime   , pinfo->edtime   , strlen(pinfo->edtime   ));
+    memcpy(path     , pinfo->path     , strlen(pinfo->path     ));
+    memcpy(argv     , pinfo->argv     , strlen(pinfo->argv     ));
+    memcpy(descript , pinfo->descript , strlen(pinfo->descript ));
+    memcpy(useyn    , pinfo->useyn    , strlen(pinfo->useyn    ));
+    memcpy(last     , pinfo->last     , strlen(pinfo->last     ));
+    pid = pinfo->pid;
+    runcnt = pinfo->runcnt;
 
 	EXEC SQL
-	DECLARE CRON_TABLE_KEY_1 CURSOR FOR
-	SELECT	ROWID,
-			PID,
-			NAME
-	FROM	CRON_TAB
+	UPDATE	CRON_TAB
+	SET		 NAME      = :name     
+            ,MONTH     = :month    
+            ,WEEK      = :week     
+            ,BIZDAY    = :bizday   
+            ,EXECDATE  = :execdate 
+            ,ATTRIBUTE = :attribute
+            ,BINTYPE   = :bintype  
+            ,STTIME    = :sttime   
+            ,EDTIME    = :edtime   
+            ,PATH      = :path     
+            ,ARGV      = :argv     
+            ,DESCRIPT  = :descript 
+            ,USEYN     = :useyn    
+            ,LAST      = :last     
+            ,PID       = :pid
+            ,RUNCNT    = :runcnt
+			,LASTUPDATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
 	WHERE	1=1
-	AND		PID > 1
-	AND		USEYN in ('Y', 'y')
+	AND		ROWID = :rowid
 	;
-	EXEC SQL OPEN CRON_TABLE_KEY_1;
 	if(SQLCODE != 0)
 	{
-		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
+		g_Log.Write("[%d:%s] UPDATE CRON_TAB ERROR[%s]",
 			g_Pid, __FILE__, SQLERRMSG);
 		return FALSE;
 	}
 
-	for(i = 0; ;i++)
-	{
-		memset(&pinfo, 0x00, sizeof(PSInfo));
-		memset(rowid, 0x00, sizeof(rowid));
-		memset(name, 0x00, sizeof(name));
-		pid = 0;
+	return TRUE;
+}
 
-		EXEC SQL FETCH CRON_TABLE_KEY_1
-		INTO	:rowid,
-				:pid,
-				:name
-		;
+int KillAllProcess()
+{
+    CNode    *pNode;
+    PSInfo   *pinfo;
+    int       listcnt = 0;
+	int		  lpid = 0;
+    g_Log.Write("[%s] == Kill All Process LIST ==", g_PgmName);
+    for (pNode = g_PSList.GetFirst();
+                pNode != NULL; pNode = g_PSList.GetNext(pNode))
+    {
+        if(pNode->m_pData == NULL) continue;
+        pinfo = (PSInfo *)pNode->m_pData;
+        g_Log.Write("[%s] [%d][%s] PID[%d]",
+			g_PgmName, listcnt, pinfo->name, pinfo->pid);
+		lpid = pinfo->pid;
 
-		if (SQLCODE != 0) break;
+		if(lpid > 0) killPS(lpid, pinfo);
 
-		memcpy(pinfo.rowid    , rowid    , strlen(rowid    ));
-		memcpy(pinfo.name     , name     , strlen(name     ));
-        pinfo.pid = pid;
+		if(UpdateProcess(pinfo) == TRUE) EXEC SQL COMMIT;
+		else EXEC SQL ROLLBACK;
+        listcnt++;
+     }
 
-		killPS(pid, &pinfo);
-	}
-	EXEC SQL CLOSE CRON_TABLE_KEY_1;
+    g_Log.Write("[%s] === Kill Done ===============", g_PgmName);
 	return TRUE;
 }
 
 void Terminate()
 {
 	signal(SIGCHLD, SIG_IGN);
-    g_Log.Write("[%d:%s] Kill Child List",
-        g_Pid, __FILE__);
-    KillAllProcessDB();
+    KillAllProcess();
 	if(g_IFSvr)  delete g_IFSvr;
 	g_PSList.Empty();
 	delete &g_PSList;
@@ -1065,6 +816,8 @@ int MainLoop()
     memset(toDate, 0x00, sizeof(toDate));
 	PrintProcessList();
 
+    if(InitSession() == FALSE) return FALSE;
+
 	g_Log.Write("[%d:%s] Start Main Loop ==========", g_Pid, __FILE__);
 		
 	while(g_Running)
@@ -1074,7 +827,6 @@ int MainLoop()
 
         if(g_IFSvr == NULL) InitSession();
         RunningClient();
-        //RunningClientDB();
 	}
 	g_Log.Write("[%d:%s] Stop Main Loop ===========", g_Pid, __FILE__);
 	return 0;

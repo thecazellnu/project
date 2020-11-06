@@ -42,12 +42,13 @@ RDB_INCL        =	-I $(ORACLE_HOME)/precomp/public \
 					-I $(ORACLE_HOME)/rdbms/public   \
 					-I $(ORACLE_HOME)/rdbms/demo     \
 					-I $(ORACLE_HOME)/plsql/public   \
-					-I $(ORACLE_HOME)/network/public 
+					-I $(ORACLE_HOME)/network/public \
+					-I $(ORACLE_INCLUDE)
 INCLUDE			= $(SYSTEM_INCL) $(RDB_INCL) $(LOCAL_INCL)
 
 SYSTEM_LIB_PATH =
 COMMON_LIB_PATH = -L$(LIBDIR)
-RDB_LIB_PATH    = -L$(ORACLE_HOME)/lib
+RDB_LIB_PATH    = -L$(ORACLE_HOME)
 LIB_PATH        = $(SYSTEM_LIB_PATH) $(COMMON_LIB_PATH) $(RDB_LIB_PATH)
 
 OSF1_LIBLIST    = -pthread
@@ -75,7 +76,8 @@ PROCFLAGS       = sqlcheck=full userid=$(DBUSR)/$(DBPSWD)@$(DBTNS) \
 				  include=$(ORACLE_HOME)/plsql/include  \
                   include=$(PRJ_INC_DIR)	\
                   include=$(PRJ_LINC_DIR)	\
-                  include=$(PRJ_SRC_DIR)
+                  include=$(PRJ_SRC_DIR)    \
+                  include=$(ORACLE_INCLUDE)
 
 .SUFFIXES : .c .o .pc .cc
 .pc.cc  :

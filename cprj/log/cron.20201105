@@ -1,0 +1,41 @@
+[17:52:03-549459][4948:cron.cc] DB CONNECT
+[17:52:03-549658][4948:cron.cc] ConSvr Listen Port[16384]
+[17:52:03-549719][4948:cron.cc] LsnHandler Listen From[localhost][5] T[349472512]
+[17:52:03-557961][cron] == PROCESS LIST ==
+[17:52:03-557999][cron] [0][TEST-CLIENT] PID[-1]
+[17:52:03-558011][cron] [1][TEST-SHELL1] PID[-1]
+[17:52:03-558021][cron] [2][TEST-SHELL2] PID[-1]
+[17:52:03-558052][cron] [3][TEST-SHELL1] PID[-1]
+[17:52:03-558062][cron] [4][TEST-SHELL2] PID[-1]
+[17:52:03-558072][cron] [5][TEST-SHELL1] PID[-1]
+[17:52:03-558081][cron] [6][TEST-SHELL2] PID[-1]
+[17:52:03-558091][cron] ==================
+[17:52:03-558100][4948:cron.cc] Start Main Loop ==========
+[17:52:04-558256][4948:cron.cc] Day Changed [20201105175204][]
+[17:52:04-561951][4948:cron.cc] BizDiv [1]
+[19:00:00-132255][4948:cron.cc] Process Start: [11657][TEST-CLIENT]
+[20:11:00-958637][4948:cron.cc] Process Start: [19111][TEST-SHELL2]
+[20:11:10-980995][4948:cron.cc] Process Start: [19131][TEST-SHELL1]
+[20:14:00-979687][4948:cron.cc] CRON_TAB UPDATE[19111]-1
+[20:14:00-983706][4948:cron.cc] CRON_TAB UPDATE[19111]-1ED
+[20:14:10-001481][4948:cron.cc] CRON_TAB UPDATE[19131]-1
+[20:14:10-002893][4948:cron.cc] CRON_TAB UPDATE[19131]-1ED
+[20:51:17-864640][4948:cron.cc] SIGTERM Message Receive
+[20:51:17-866008][4948:cron.cc] Stop Main Loop ===========
+[20:51:17-866136][4948:cron.cc] Kill Child List
+[20:51:17-873168][4948:cron.cc] KILL PROCESS[11657][TEST-CLIENT]
+[21:20:04-554150][27802:cron.cc] DB CONNECT
+[21:20:04-554292][27802:cron.cc] ConSvr Listen Port[16384]
+[21:20:04-554350][27802:cron.cc] LsnHandler Listen From[localhost][5] T[-1805994240]
+[21:20:04-560655][cron] == PROCESS LIST ==
+[21:20:04-560690][cron] [0][TEST-CLIENT] PID[-1]
+[21:20:04-560700][cron] [1][TEST-SHELL1] PID[-1]
+[21:20:04-560708][cron] [2][TEST-SHELL2] PID[-1]
+[21:20:04-560716][cron] [3][TEST-SHELL1] PID[-1]
+[21:20:04-560724][cron] [4][TEST-SHELL2] PID[-1]
+[21:20:04-560732][cron] [5][TEST-SHELL1] PID[-1]
+[21:20:04-560740][cron] [6][TEST-SHELL2] PID[-1]
+[21:20:04-560748][cron] ==================
+[21:20:04-560756][27802:cron.cc] Start Main Loop ==========
+[21:20:05-560946][27802:cron.cc] Day Changed [20201105212005][]
+[21:20:05-564709][27802:cron.cc] BizDiv [1]

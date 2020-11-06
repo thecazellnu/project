@@ -14,7 +14,6 @@
 #include <sys/uio.h>
 #include <sys/stat.h>
 #include <sqlca.h>
-#include <sqlcpr.h>
 
 #include "log.h"
 #include "socklib.h"
