@@ -12,3 +12,5 @@
 [10:01:30-168964][5206:test.cc] TimeOut [localhost][6] T[783927040]
 [10:01:45-184254][5206:test.cc] TimeOut [localhost][6] T[783927040]
 [10:02:00-085287][5206:test.cc] DisConnect FD[-1] T[-1]
+[13:20:00-103855][5206:test.cc] SIGTERM Message Receive
+[13:20:00-103942][5206:test.cc] TEST Process End ====================
