@@ -10,6 +10,7 @@ int  gi_monthday1;
 int  gi_monthday2;
 char gs_bizdiv[16+1];	
 EXEC SQL END DECLARE SECTION;
+char gs_last[16];
 
 int InitSession();
 
@@ -283,7 +284,6 @@ void GetBizDiv()
 
 void CheckDate(char *toDate)
 {
-    if(GetDateInfo(0) == FALSE) return;
     if(memcmp(toDate, gs_datetime, 8))
     {
 		g_Log.Write("[%d:%s] Day Changed [%s][%.8s]", 
@@ -428,6 +428,7 @@ int killPS(int pid, PSInfo *pinfo)
 	g_Log.Write("[%d:%s] KILL PROCESS[%d][%s]",
 		g_Pid, __FILE__, pid, pinfo->name);
 	krtn = kill(pid, SIGTERM);
+	memcpy(gs_last, gs_datetime, 16);
 	if(krtn < 0 || !g_Running)
 	{
 		if(krtn < 0)
@@ -572,6 +573,8 @@ g_Pid, __FILE__, pinfo->path, argv[0], argv[1], argv[2], argv[3], argv[4]);
 
 			pinfo->pid = pid;
 			pinfo->runcnt++;
+			memcpy(pinfo->last, gs_datetime, 14);
+			memcpy(gs_last, gs_datetime, 16);
 			break;
 	}
 
@@ -584,7 +587,11 @@ int CheckChildProc(int pid)
 	PSInfo *pinfo = g_PSList.SearchPid(pid);
 	g_Log.Write("[%d:%s] Process End: [%d][%d][%s]", 
 		g_Pid, __FILE__, pid, pinfo->pid, pinfo->name);
-	if(pinfo) pinfo->pid = -1;
+	if(pinfo) 
+	{
+		pinfo->pid = -1;
+		memcpy(gs_last, gs_datetime, 16);
+	}
 
 	return TRUE;
 }
@@ -649,20 +656,7 @@ int UpdateProcess(PSInfo *pinfo)
 
 	EXEC SQL
 	UPDATE	CRON_TAB
-	SET		 NAME      = :name     
-            ,MONTH     = :month    
-            ,WEEK      = :week     
-            ,BIZDAY    = :bizday   
-            ,EXECDATE  = :execdate 
-            ,ATTRIBUTE = :attribute
-            ,BINTYPE   = :bintype  
-            ,STTIME    = :sttime   
-            ,EDTIME    = :edtime   
-            ,PATH      = :path     
-            ,ARGV      = :argv     
-            ,DESCRIPT  = :descript 
-            ,USEYN     = :useyn    
-            ,LAST      = :last     
+	SET		 LAST      = :last     
             ,PID       = :pid
             ,RUNCNT    = :runcnt
 			,LASTUPDATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
@@ -676,6 +670,24 @@ int UpdateProcess(PSInfo *pinfo)
 		return FALSE;
 	}
 
+	return TRUE;
+}
+
+int UpdateList()
+{
+    CNode    *pNode;
+    PSInfo   *pinfo;
+    int       listcnt = 0;
+    for (pNode = g_PSList.GetFirst();
+                pNode != NULL; pNode = g_PSList.GetNext(pNode))
+    {
+        if(pNode->m_pData == NULL) continue;
+        pinfo = (PSInfo *)pNode->m_pData;
+
+		if(UpdateProcess(pinfo) == TRUE) EXEC SQL COMMIT;
+		else EXEC SQL ROLLBACK;
+    }
+	g_Log.Write("[%d:%s] UPDATE Process Table", g_Pid, __FILE__);
 	return TRUE;
 }
 
@@ -700,7 +712,7 @@ int KillAllProcess()
 		if(UpdateProcess(pinfo) == TRUE) EXEC SQL COMMIT;
 		else EXEC SQL ROLLBACK;
         listcnt++;
-     }
+    }
 
     g_Log.Write("[%s] === Kill Done ===============", g_PgmName);
 	return TRUE;
@@ -812,23 +824,51 @@ int InitSession()
 	return TRUE;
 }
 
-int MainLoop()
+void *SubLoop(void *arg)
 {
-    char toDate[8];
-    memset(toDate, 0x00, sizeof(toDate));
-	PrintProcessList();
+	int		dbCnt;
+	char	chkLast[16];
 
-    if(InitSession() == FALSE) return FALSE;
+	memcpy(chkLast, gs_last, 16);
+	sleep(5);
 
-	g_Log.Write("[%d:%s] Start Main Loop ==========", g_Pid, __FILE__);
-		
+	g_Log.Write("[%d:%s] Start Sub Loop ==========", g_Pid, __FILE__);
 	while(g_Running)
 	{
 		sleep(1);
-        CheckDate(toDate);
-
         if(g_IFSvr == NULL) InitSession();
+		if(memcmp(gs_last, chkLast, 16))
+		{
+			memcpy(chkLast, gs_last, 16);
+			UpdateList();
+		}
+	}
+	g_Log.Write("[%d:%s] Stop Sub Loop ===========", g_Pid, __FILE__);
+	return (void *)NULL;
+}
+
+int MainLoop()
+{
+	pthread_t tid;
+    char toDate[8];
+    memset(toDate, 0x00, sizeof(toDate));
+    memset(gs_last, 0x00, sizeof(gs_last));
+	PrintProcessList();
+    if(InitSession() == FALSE) return FALSE;
+
+    if(pthread_create(&tid, NULL, SubLoop, NULL) != 0)
+    {
+        g_Log.Write("[%d:%s] Thread Create Error [%d][%d]",
+            g_Pid, __FILE__, tid, errno);
+        return -1;
+    }
+
+	g_Log.Write("[%d:%s] Start Main Loop ==========", g_Pid, __FILE__);
+	while(g_Running)
+	{
+		sleep(1);
         RunningClient();
+        CheckDate(toDate);
 	}
 	g_Log.Write("[%d:%s] Stop Main Loop ===========", g_Pid, __FILE__);
 	return 0;
