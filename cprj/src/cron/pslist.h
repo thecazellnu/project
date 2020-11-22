@@ -21,6 +21,7 @@ typedef struct
     char    descript    [256 + 1];
     char    useyn       [1   + 1];
     char    last        [14  + 1];
+    char    dbupdate    [1   + 1];
     int     pid                  ;
     int     runcnt               ;
     int     write                ;

@@ -1,0 +1,24 @@
+[13:53:43-133969][22198:cron.cc] DB CONNECT
+[13:53:43-138886][cron] == PROCESS LIST ==
+[13:53:43-138924][cron] [0][TEST-CLIENT] PID[-1]
+[13:53:43-138935][cron] [1][TEST-SHELL1] PID[-1]
+[13:53:43-138945][cron] [2][TEST-SHELL2] PID[-1]
+[13:53:43-138954][cron] [3][TEST-SHELL1] PID[-1]
+[13:53:43-138963][cron] [4][TEST-SHELL2] PID[-1]
+[13:53:43-138972][cron] [5][TEST-SHELL1] PID[-1]
+[13:53:43-138981][cron] [6][TEST-SHELL2] PID[-1]
+[13:53:43-138990][cron] ==================
+[13:53:43-139105][22198:cron.cc] ConSvr Listen Port[16384]
+[13:53:43-139169][22198:cron.cc] LsnHandler Listen From[localhost][5] T[-1466956032]
+[13:53:43-139183][22198:cron.cc] Start Main Loop ==========
+[13:53:44-139385][22198:cron.cc] Day Changed [20201116135344][]
+[13:53:44-141283][22198:cron.cc] BizDiv [1]
+[13:53:48-139446][22198:cron.cc] Start Sub Loop ==========
+[14:36:10-558706][22198:cron.cc] Process Start: [27014][TEST-SHELL1]
+[14:36:10-559333][22198:cron.cc] Process Start: [27015][TEST-SHELL2]
+[14:36:11-440079][22198:cron.cc] UPDATE Process [TEST-SHELL1][27014]
+[14:36:11-446673][22198:cron.cc] UPDATE Process [TEST-SHELL2][27015]
+[14:39:10-577966][22198:cron.cc] Process End: [27015][27015][TEST-SHELL2]
+[14:39:10-578123][22198:cron.cc] Process End: [27014][27014][TEST-SHELL1]
+[14:39:11-473698][22198:cron.cc] UPDATE Process [TEST-SHELL1][-1]
+[14:39:11-481193][22198:cron.cc] UPDATE Process [TEST-SHELL2][-1]

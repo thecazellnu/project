@@ -1,0 +1,26 @@
+[00:00:00-396400][19731:cron.cc] Day Changed [20201112000000][20201111]
+[00:00:00-398143][19731:cron.cc] BizDiv [1]
+[10:00:00-330470][19731:cron.cc] Process Start: [13343][TEST-CLIENT]
+[10:00:00-484265][19731:cron.cc] UPDATE Process Table
+[12:11:00-616132][19731:cron.cc] Process Start: [6165][TEST-SHELL1]
+[12:11:01-461147][19731:cron.cc] UPDATE Process Table
+[12:12:00-626988][19731:cron.cc] Process Start: [6336][TEST-SHELL2]
+[12:12:00-627648][19731:cron.cc] Process Start: [6338][TEST-SHELL1]
+[12:12:00-628271][19731:cron.cc] Process Start: [6339][TEST-SHELL2]
+[12:12:01-513827][19731:cron.cc] UPDATE Process Table
+[12:14:00-636350][19731:cron.cc] Process End: [6165][6165][TEST-SHELL1]
+[12:14:01-572848][19731:cron.cc] UPDATE Process Table
+[12:15:00-650451][19731:cron.cc] Process End: [6338][6338][TEST-SHELL1]
+[12:15:00-651741][19731:cron.cc] Process End: [6339][6339][TEST-SHELL2]
+[12:15:00-652904][19731:cron.cc] Process End: [6336][6336][TEST-SHELL2]
+[12:15:01-620160][19731:cron.cc] UPDATE Process Table
+[13:20:00-289747][19731:cron.cc] KILL PROCESS[13343][TEST-CLIENT]
+[13:20:00-292461][19731:cron.cc] child exit status = [1] pid=[13343]
+[13:20:00-292539][19731:cron.cc] Process End: [13343][13343][TEST-CLIENT]
+[13:20:01-132428][19731:cron.cc] UPDATE Process Table
+[14:36:10-044763][19731:cron.cc] Process Start: [1538][TEST-SHELL1]
+[14:36:10-045409][19731:cron.cc] Process Start: [1539][TEST-SHELL2]
+[14:36:10-719020][19731:cron.cc] UPDATE Process Table
+[14:39:10-062866][19731:cron.cc] Process End: [1539][1539][TEST-SHELL2]
+[14:39:10-062928][19731:cron.cc] Process End: [1538][1538][TEST-SHELL1]
+[14:39:10-783747][19731:cron.cc] UPDATE Process Table
