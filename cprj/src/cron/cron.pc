@@ -103,6 +103,163 @@ int DbConnect()
 	return TRUE;
 }
 
+int ReLoadProcessList()
+{
+	EXEC SQL BEGIN DECLARE SECTION ;
+	char    rowid[20];
+	char    name        [128 + 1];
+    char    month       [16  + 1];
+    char    week        [16  + 1];
+    char    bizday      [16  + 1];
+    char    execdate    [8   + 1];
+    char    attribute   [8   + 1];
+    char    bintype     [8   + 1];
+    char    sttime      [6   + 1];
+    char    edtime      [6   + 1];
+    char    path        [256 + 1];
+    char    argv        [256 + 1];
+    char    descript    [256 + 1];
+    char    useyn       [1   + 1];
+    char    last        [14  + 1];
+    int     pid                  ;
+    int     runcnt               ;
+	EXEC SQL END DECLARE SECTION ;
+	int i;
+
+	EXEC SQL DECLARE CTABLE_KEY_N CURSOR FOR
+	SELECT	ROWID
+			,NAME
+			,MONTH
+			,WEEK
+			,BIZDAY
+			,EXECDATE
+			,ATTRIBUTE
+			,NVL(BINTYPE, ' ')
+			,STTIME
+			,EDTIME
+			,TRIM(PATH)
+			,NVL(TRIM(ARGV), ' ')
+			,NVL(DESCRIPT, ' ')
+			,NVL(USEYN, 'N')
+			,NVL(LAST, ' ')
+			,PID
+			,RUNCNT
+	FROM	CRON_TAB
+	WHERE	1=1
+	;
+	EXEC SQL OPEN CTABLE_KEY_N;
+	if(SQLCODE != 0)
+	{
+		g_Log.Write("[%d:%s] CURSOR OPEN ERROR[%s]",
+			g_Pid, __FILE__, SQLERRMSG);
+		return FALSE;
+	}
+
+	for(i = 0; ;i++)
+	{
+		memset(rowid    , 0x00, sizeof(rowid    ));
+		memset(name     , 0x00, sizeof(name     ));
+		memset(month    , 0x00, sizeof(month    ));
+		memset(week     , 0x00, sizeof(week     ));
+		memset(bizday   , 0x00, sizeof(bizday   ));
+		memset(execdate , 0x00, sizeof(execdate ));
+		memset(attribute, 0x00, sizeof(attribute));
+		memset(bintype  , 0x00, sizeof(bintype  ));
+		memset(sttime   , 0x00, sizeof(sttime   ));
+		memset(edtime   , 0x00, sizeof(edtime   ));
+		memset(path     , 0x00, sizeof(path     ));
+		memset(argv     , 0x00, sizeof(argv     ));
+		memset(descript , 0x00, sizeof(descript ));
+		memset(useyn    , 0x00, sizeof(useyn    ));
+		memset(last     , 0x00, sizeof(last     ));
+		pid = 0;
+		runcnt = 0;
+
+		EXEC SQL FETCH CTABLE_KEY_N
+		INTO	:rowid
+				,:name
+				,:month
+				,:week
+				,:bizday
+				,:execdate
+				,:attribute
+				,:bintype
+				,:sttime
+				,:edtime
+				,:path
+				,:argv
+				,:descript
+				,:useyn
+				,:last
+				,:pid
+				,:runcnt
+		;
+
+		if (SQLCODE != 0) 
+		{
+            if(SQLCODE != 1403)
+                g_Log.Write("[%d:%s] CURSOR FETCH ERROR[%s]",
+                    g_Pid, __FILE__, SQLERRMSG);
+			break;
+		}
+		PSInfo *pinfo = g_PSList.SearchRId(rowid);
+
+		if(pinfo)
+		{
+			g_Log.Write("[%d:%s] ReLoadProcess :[%s][%s][%s]", 
+				g_Pid, __FILE__, rowid, pinfo->rowid, pinfo->name);
+
+			strncpy(pinfo->rowid    , rowid    , strlen(rowid    ));
+			strncpy(pinfo->name     , name     , strlen(name     ));
+			strncpy(pinfo->month    , month    , strlen(month    ));
+			strncpy(pinfo->week     , week     , strlen(week     ));
+			strncpy(pinfo->bizday   , bizday   , strlen(bizday   ));
+			strncpy(pinfo->execdate , execdate , strlen(execdate ));
+			strncpy(pinfo->attribute, attribute, strlen(attribute));
+			strncpy(pinfo->bintype  , bintype  , strlen(bintype  ));
+			strncpy(pinfo->sttime   , sttime   , strlen(sttime   ));
+			strncpy(pinfo->edtime   , edtime   , strlen(edtime   ));
+			strncpy(pinfo->path     , path     , strlen(path     ));
+			strncpy(pinfo->argv     , argv     , strlen(argv     ));
+			strncpy(pinfo->descript , descript , strlen(descript ));
+			strncpy(pinfo->useyn    , useyn    , strlen(useyn    ));
+			strncpy(pinfo->last     , last     , strlen(last     ));		
+			pinfo->dbupdate[0] = 'N';
+			pinfo->pid = pid;
+			pinfo->runcnt = runcnt;
+		}
+		else
+		{
+			g_Log.Write("[%d:%s] New LoadProcess :[%s][%s]", 
+				g_Pid, __FILE__, rowid, name);
+
+			PSInfo *npinfo = new PSInfo;
+			strncpy(npinfo->rowid    , rowid    , strlen(rowid    ));
+			strncpy(npinfo->name     , name     , strlen(name     ));
+			strncpy(npinfo->month    , month    , strlen(month    ));
+			strncpy(npinfo->week     , week     , strlen(week     ));
+			strncpy(npinfo->bizday   , bizday   , strlen(bizday   ));
+			strncpy(npinfo->execdate , execdate , strlen(execdate ));
+			strncpy(npinfo->attribute, attribute, strlen(attribute));
+			strncpy(npinfo->bintype  , bintype  , strlen(bintype  ));
+			strncpy(npinfo->sttime   , sttime   , strlen(sttime   ));
+			strncpy(npinfo->edtime   , edtime   , strlen(edtime   ));
+			strncpy(npinfo->path     , path     , strlen(path     ));
+			strncpy(npinfo->argv     , argv     , strlen(argv     ));
+			strncpy(npinfo->descript , descript , strlen(descript ));
+			strncpy(npinfo->useyn    , useyn    , strlen(useyn    ));
+			strncpy(npinfo->last     , last     , strlen(last     ));		
+			npinfo->dbupdate[0] = 'N';
+			npinfo->pid = pid;
+			npinfo->runcnt = runcnt;
+			g_PSList.Add(npinfo);
+		}
+	}
+	EXEC SQL CLOSE CTABLE_KEY_N;
+
+	return 1;
+}
+
 int LoadProcessList()
 {
 	EXEC SQL BEGIN DECLARE SECTION ;
@@ -203,21 +360,21 @@ int LoadProcessList()
                     g_Pid, __FILE__, SQLERRMSG);
 			break;
 		}
-		memcpy(pinfo->rowid    , rowid    , strlen(rowid    ));
-		memcpy(pinfo->name     , name     , strlen(name     ));
-		memcpy(pinfo->month    , month    , strlen(month    ));
-		memcpy(pinfo->week     , week     , strlen(week     ));
-		memcpy(pinfo->bizday   , bizday   , strlen(bizday   ));
-		memcpy(pinfo->execdate , execdate , strlen(execdate ));
-		memcpy(pinfo->attribute, attribute, strlen(attribute));
-		memcpy(pinfo->bintype  , bintype  , strlen(bintype  ));
-		memcpy(pinfo->sttime   , sttime   , strlen(sttime   ));
-		memcpy(pinfo->edtime   , edtime   , strlen(edtime   ));
-		memcpy(pinfo->path     , path     , strlen(path     ));
-		memcpy(pinfo->argv     , argv     , strlen(argv     ));
-		memcpy(pinfo->descript , descript , strlen(descript ));
-		memcpy(pinfo->useyn    , useyn    , strlen(useyn    ));
-		memcpy(pinfo->last     , last     , strlen(last     ));		
+		strncpy(pinfo->rowid    , rowid    , strlen(rowid    ));
+		strncpy(pinfo->name     , name     , strlen(name     ));
+		strncpy(pinfo->month    , month    , strlen(month    ));
+		strncpy(pinfo->week     , week     , strlen(week     ));
+		strncpy(pinfo->bizday   , bizday   , strlen(bizday   ));
+		strncpy(pinfo->execdate , execdate , strlen(execdate ));
+		strncpy(pinfo->attribute, attribute, strlen(attribute));
+		strncpy(pinfo->bintype  , bintype  , strlen(bintype  ));
+		strncpy(pinfo->sttime   , sttime   , strlen(sttime   ));
+		strncpy(pinfo->edtime   , edtime   , strlen(edtime   ));
+		strncpy(pinfo->path     , path     , strlen(path     ));
+		strncpy(pinfo->argv     , argv     , strlen(argv     ));
+		strncpy(pinfo->descript , descript , strlen(descript ));
+		strncpy(pinfo->useyn    , useyn    , strlen(useyn    ));
+		strncpy(pinfo->last     , last     , strlen(last     ));		
 		pinfo->dbupdate[0] = 'N';
         pinfo->pid = pid;
         pinfo->runcnt = runcnt;
@@ -867,6 +1024,11 @@ int MainLoop()
 		sleep(1);
         RunningClient();
         CheckDate(toDate);
+		if(gi_ListChange)
+		{
+			ReLoadProcessList();
+			gi_ListChange = 0;
+		}
 	}
 	g_Log.Write("[%d:%s] Stop Main Loop ===========", g_Pid, __FILE__);
 	return 0;

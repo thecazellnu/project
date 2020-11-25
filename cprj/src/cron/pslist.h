@@ -38,6 +38,26 @@ class PSList : public CList
         {
         };
 
+        PSInfo *SearchRId(char *rid)
+        {
+            if(m_Count <= 0) return NULL;
+			if(strlen(rid)) 
+			{
+				CNode *pNode;
+				for(pNode = GetFirst();
+					pNode != NULL;
+					pNode = GetNext(pNode))
+				{
+					if(pNode->m_pData)
+						if(!memcmp(rid, ((PSInfo *)pNode->m_pData)->rowid, 
+							strlen(rid)))
+							return (PSInfo *)pNode->m_pData;
+				}
+				return NULL;
+			}
+            return NULL;
+        }
+
         PSInfo *SearchPid(int pid)
         {
             if(m_Count <= 0 || pid <= 1) return NULL;
